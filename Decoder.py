@@ -1,6 +1,6 @@
 import numpy as np
-from CaliculateLR import CalculateLR_BSC
-from CaliculateLR import CalculateLR_BEC
+from CaliculateW import CalculateW_BSC
+from CaliculateW import CalculateW_BEC
 from decimal import Decimal
 from Encoder import GetInformationIndex
 from Encoder import GetGeneratorMatrix
@@ -33,13 +33,13 @@ class Decoder:
         """
         estimatedcodeword = np.array([], dtype=np.uint8)
         informationindex = GetInformationIndex(self.K, self.path)
-        LRmatrix = np.full((self.N,  int(np.log2(self.N))+1), Decimal("-1"))
-        # LRの値を格納する配列
+        matrixP = np.full((self.N,  int(np.log2(self.N))+1, 2), Decimal("-1"))
+        # 事後確率の値を格納する配列
         j = 0
         for i in range(self.N):
             if i == informationindex[j]:
                 hat_ui = self.EstimateCodeword_ibit(
-                    P, self.N, self.chaneloutput, i, estimatedcodeword, LRmatrix)
+                    P, self.N, self.chaneloutput, i, estimatedcodeword, matrixP)
                 j += 1
             else:
                 hat_ui = 0
@@ -47,16 +47,18 @@ class Decoder:
 
         self.hat_message_prime = estimatedcodeword
 
-    def EstimateCodeword_ibit(self, P, N, chaneloutput, i, estimatedcodeword, LRmatrix):
+    def EstimateCodeword_ibit(self, P, N, chaneloutput, i, estimatedcodeword, matrixP):
         """
         符号語のibit目を求める
         """
         if self.chaneltype=="BSC":
-            LR = CalculateLR_BSC(P, N, chaneloutput, i, estimatedcodeword, LRmatrix, 0)
-            return 0 if LR >= 1 else 1
+            W_0 = CalculateW_BSC(P, N, chaneloutput, i, np.array([0]), estimatedcodeword, matrixP, 0)
+            W_1 = CalculateW_BSC(P, N, chaneloutput, i, np.array([1]), estimatedcodeword, matrixP, 0)
+            return 0 if W_0 >= W_1 else 1
         elif self.chaneltype=="BEC":
-            LR = CalculateLR_BEC(P, N, chaneloutput, i, estimatedcodeword, LRmatrix, 0)
-            return 0 if LR >= 1 else 1
+            W_0 = CalculateW_BEC(P, N, chaneloutput, i, np.array([0]), estimatedcodeword, matrixP, 0)
+            W_1 = CalculateW_BEC(P, N, chaneloutput, i, np.array([1]), estimatedcodeword, matrixP, 0)
+            return 0 if W_0 >= W_1 else 1
         else:
             exit(1)
 
@@ -85,15 +87,28 @@ class Decoder:
 
 
 if __name__ == "__main__":
-    K = 16
-    N = 32
-    path = "./sort_I/sort_I_5_0.11_20.dat"
-    chaneloutput = np.array([0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1,
+    if False:
+        K = 16
+        N = 32
+        path = "./sort_I/sort_I_5_0.11_20.dat"
+        chaneloutput = np.array([0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1,
                              1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1])
 
-    decoder0 = Decoder(K, N, chaneloutput, "BSC", path)
-    #decoder0.DecodeOutput(0.11)
-    decoder0.DecodeMessage(0.11)
+        decoder0 = Decoder(K, N, chaneloutput, "BSC", path)
+        #decoder0.DecodeOutput(0.11)
+        decoder0.DecodeMessage(0.11)
 
-   #    print(decoder0.hat_message_prime)
-    print(decoder0.hat_message)
+       #    print(decoder0.hat_message_prime)
+        print(decoder0.hat_message)
+
+    if True:
+        K =8
+        N = 16
+        e = 0.5
+        path = "./sort_I/sortI_BEC_0.5_16.dat"
+        chaneloutput2 = np.array([1 ,3, 0, 3, 0, 0, 0, 3, 3, 1, 3, 3, 3, 1, 0, 3])
+
+        decoder1 = Decoder(K,N, chaneloutput2, "BEC", path)
+        decoder1.DecodeMessage(e)
+
+        print(decoder1.hat_message)
