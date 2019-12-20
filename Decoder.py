@@ -53,20 +53,20 @@ class ListDecoder:
         for i in range(self.N):
             if i == informationindex[j]:
                 for l in range(self.L):
-                    # if self.activePath[l] == True:
-                    tmp_list[2*l] = np.insert(self.hat_message_list[l],
-                                              i, np.array([0]))
-                    tmp_list[2*l +
-                             1] = np.insert(self.hat_message_list[l], i, np.array([1]))
-                    #tmp_activePath[2*l] = True
-                    #tmp_activePath[2*l + 1] = True
-                    tmp_W[2*l] = CalculateW_BSC_2(P, self.N, self.chaneloutput, i, np.array(
-                         [0], dtype=np.uint8), self.hat_message_list[l])
-                    tmp_W[2*l + 1] = CalculateW_BSC_2(P, self.N, self.chaneloutput, i, np.array(
-                        [1], dtype=np.uint8), self.hat_message_list[l])
-                    #print(tmp_list[2*l], tmp_W[2*l])
-                    #print(tmp_list[2*l+1], tmp_W[2*l+1])
-                    print(tmp_W[2*l], ",",tmp_W[2*l+1])
+                    if self.activePath[l] == True:
+                        tmp_list[2*l] = np.insert(self.hat_message_list[l],
+                                                  i, np.array([0]))
+                        tmp_list[2*l +
+                                 1] = np.insert(self.hat_message_list[l], i, np.array([1]))
+                        #tmp_activePath[2*l] = True
+                        #tmp_activePath[2*l + 1] = True
+                        tmp_W[2*l] = CalculateW_BSC_2(P, self.N, self.chaneloutput, i, np.array(
+                             [0], dtype=np.uint8), self.hat_message_list[l])
+                        tmp_W[2*l + 1] = CalculateW_BSC_2(P, self.N, self.chaneloutput, i, np.array(
+                         [1], dtype=np.uint8), self.hat_message_list[l])
+                        #print(tmp_list[2*l], tmp_W[2*l])
+                        #print(tmp_list[2*l+1], tmp_W[2*l+1])
+                        print(tmp_W[2*l], ",",tmp_W[2*l+1])
                 # ここまでで全てのパスを2倍に複製し、各々の事後確率を計算した。
                 # print(tmp_list)
                 sort_W_index = np.argsort(tmp_W)
