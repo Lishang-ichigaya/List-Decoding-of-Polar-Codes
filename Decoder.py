@@ -3,6 +3,8 @@ from CaliculateW import CalculateW_BSC
 from CaliculateW import CalculateW_BSC_2
 from CaliculateW import CalculateW_BEC
 from decimal import Decimal
+from decimal import getcontext
+getcontext().prec = 56
 from Encoder import GetInformationIndex
 from Encoder import GetGeneratorMatrix
 
@@ -60,14 +62,16 @@ class ListDecoder:
                                  1] = np.insert(self.hat_message_list[l], i, np.array([1]))
                         tmp_activePath[2*l] = True
                         tmp_activePath[2*l + 1] = True
-                        tmp_W[2*l] = CalculateW_BSC_2(P, self.N, self.chaneloutput, i, np.array(
-                             [0], dtype=np.uint8), self.hat_message_list[l])
-                        tmp_W[2*l + 1] = CalculateW_BSC_2(P, self.N, self.chaneloutput, i, np.array(
-                            [1], dtype=np.uint8), self.hat_message_list[l])
-                        print(tmp_list[2*l], tmp_W[2*l])
-                        print(tmp_list[2*l+1], tmp_W[2*l+1])
+                        tmp_W[2*l] = CalculateW_BSC(P, self.N, self.chaneloutput, i, np.array(
+                            [0], dtype=np.uint8), self.hat_message_list[l], self.matrixP[l], 0)
+                        tmp_W[2*l + 1] = CalculateW_BSC(P, self.N, self.chaneloutput, i, np.array(
+                            [1], dtype=np.uint8), self.hat_message_list[l], self.matrixP[l], 0)
+                        #print(tmp_list[2*l], tmp_W[2*l])
+                        #print(tmp_list[2*l+1], tmp_W[2*l+1])
                         #print(tmp_W[2*l], ",", tmp_W[2*l+1])
                 # ここまでで全てのパスを2倍に複製し、各々の事後確率を計算した。
+                #print(nomalaizer)
+
                 # print(tmp_list)
                 sort_W_index = np.argsort(tmp_W)
                 sort_W_index = sort_W_index[-1::-1]
@@ -91,9 +95,11 @@ class ListDecoder:
             # print(self.hat_message_list)
         # ここまででメインの処理はおわり？
 
-        print("最終的な候補")
-        for l in range(self.L):
-            print(self.hat_message_list[l])
+        if False:
+            print("最終的な候補")
+            for l in range(self.L):
+                print(self.hat_message_list[l])
+
         self.hat_message_prime = self.hat_message_list[0]
 
     def EstimateCodeword_ibit(self, P, N, chaneloutput, i, estimatedcodeword, matrixP):
@@ -228,18 +234,19 @@ if __name__ == "__main__":
     if True:
         K = 16
         N = 32
-        L = 4
+        L = 16
         path = "./sort_I/sort_I_5_0.11_20.dat"
-        chaneloutput = np.array([1 ,1 ,0 ,0 ,1, 1, 0, 0, 0, 1 ,1 ,0 ,1 ,1 ,0 ,1 ,0 ,1 ,1 ,0 ,0 ,0 ,0 ,1 ,0 ,1 ,1 ,1 ,1 ,0 ,1 ,1])
+        chaneloutput = np.array([1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0,
+                                 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1])
 
-        decoder0 = ListDecoder(K, N, L, chaneloutput, "BSC", path)
+        decoder0 = ListDecoder(K, N, L, chaneloutput, "BSC", path, False)
         decoder0.DecodeMessage(0.11)
-        print(decoder0.hat_message)
+        print("SCL: ", decoder0.hat_message)
 
-        decoder1 = Decoder(K, N, chaneloutput, "BSC", path)
+        decoder1 = Decoder(K, N, chaneloutput, "BSC", path, False)
         decoder1.DecodeMessage(0.11)
-        print(decoder1.hat_message)
-
+        print(" SC: ", decoder1.hat_message)
+        print("Ans:  [0 0 1 1 0 0 0 0 1 1 1 0 1 0 0 1]")
     if False:
         K = 8
         N = 16

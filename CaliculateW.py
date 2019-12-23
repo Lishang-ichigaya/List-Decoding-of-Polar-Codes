@@ -1,5 +1,7 @@
 import numpy as np
 from decimal import Decimal
+from decimal import getcontext
+getcontext().prec = 56
 
 # i +
 #  n * branch,  m=log2(n)
@@ -78,6 +80,7 @@ def CalculateW_BSC(p, N, chaneloutput_y, i, u_i, estimatedcodeword_u, matrixP, b
             * CalculateW_BSC(p, int(N/2), y_1, int(j/2), hat_u_i_minus_1 ^ u_i, hat_u1, matrixP,2*branch)
             * CalculateW_BSC(p, int(N/2), y_2, int(j/2), u_i, hat_u2, matrixP, 2*branch+1))
     matrixP[i + N * branch][M][u_i[0]] = W
+    print(i, branch, W)
     return W
 
 def CalculateW_BSC_2(p, N, chaneloutput_y, i, u_i, estimatedcodeword_u):

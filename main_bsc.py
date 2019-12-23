@@ -13,7 +13,7 @@ from Decoder import ListDecoder
 if __name__ == '__main__':
     K = 32
     N = 64
-    L = 8
+    L = 16
     M = int(np.log2(N))
     chaneltype = "BSC"
     P = 0.11
@@ -79,17 +79,20 @@ if __name__ == '__main__':
 
         decoder0 = Decoder(K, N ,output, chaneltype, path)
         decoder0.DecodeMessage(P)
-        #decoder1 = ListDecoder(K, N, L, output, chaneltype, path)
-        #decoder1.DecodeMessage(P)
+        decoder1 = ListDecoder(K, N, L, output, chaneltype, path)
+        decoder1.DecodeMessage(P)
         #↑復号
         hat_message0 = Message(K)
         hat_message0.message = decoder0.hat_message
         print(" SCメッセージ推定値:\t", hat_message0.message)
 
-        #hat_message1 = Message(K)
-        #hat_message1.message = decoder1.hat_message
-        #print("SCLメッセージ推定値:\t", hat_message1.message)
+        hat_message1 = Message(K)
+        hat_message1.message = decoder1.hat_message
+        print("SCLメッセージ推定値:\t", hat_message1.message)
 
 
         error = np.bitwise_xor(message.message, hat_message0.message)
-        print("誤り数:", np.count_nonzero(error))
+        print(" SC誤り数:", np.count_nonzero(error))
+
+        error = np.bitwise_xor(message.message, hat_message1.message)
+        print("SCL誤り数:", np.count_nonzero(error))
