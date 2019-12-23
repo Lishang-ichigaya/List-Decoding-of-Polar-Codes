@@ -1,12 +1,9 @@
 import numpy as np
+from decimal import Decimal
+from decimal import getcontext
+getcontext().prec = 128
 
-L = 8
+a = Decimal("0.55")
+b = Decimal("0.11")
 
-a = np.array([0.1, 0.8, 0.2, 0.6, 0.1, 0.4, 0.9])
-b = np.argsort(a)
-c = b[-1::-1]
-
-print(a)
-print(b)
-print(c[:2])
-
+print(a/b)

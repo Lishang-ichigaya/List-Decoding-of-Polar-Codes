@@ -14,6 +14,7 @@ class Encoder:
         self.K = K
         self.message = message
         self.N = N
+        self.message_prime = np.zeros(N, dtype=np.uint8)
         self.codeword = np.zeros(N, dtype=np.uint8)
         self.path = path
         self.checker = checker
@@ -23,16 +24,19 @@ class Encoder:
         informationindex = GetInformationIndex(self.K, self.path)
         for i in range(self.N):
             if i == informationindex[j]:
-                self.codeword[i] = self.message[j]
+                self.message_prime[i] = self.message[j]
                 j += 1
                 if j > self.K-1:  # jが範囲を超えないように調整
                     j = self.K-1
             else:
-                self.codeword[i] = 0
+                self.message_prime[i] = 0
         if self.checker == True:
-            print("メッセージもどき： \t", self.codeword)
-        self.codeword = np.dot(self.codeword, GetGeneratorMatrix(self.N)) % 2
+            print("メッセージもどき： \t", self.message_prime)
+        self.codeword = np.dot(self.message_prime, GetGeneratorMatrix(self.N)) % 2
         self.codeword = self.codeword.A1
+
+    def GetMessagePrime(self):
+        return self.message_prime
 
 
 def GetGeneratorMatrix(N):

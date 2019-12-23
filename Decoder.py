@@ -4,7 +4,7 @@ from CaliculateW import CalculateW_BSC_2
 from CaliculateW import CalculateW_BEC
 from decimal import Decimal
 from decimal import getcontext
-getcontext().prec = 56
+getcontext().prec = 28
 from Encoder import GetInformationIndex
 from Encoder import GetGeneratorMatrix
 
@@ -50,7 +50,7 @@ class ListDecoder:
         # アクティブなパスを示す配列の0番目だけ初期化
 
         tmp_list = [np.array([], dtype=np.uint8)] * (2*self.L)
-        tmp_W = np.full((2 * self.L), -1)
+        tmp_W = np.full((2 * self.L), Decimal("-1"))
         tmp_activePath = [False] * (2*self.L)
         for i in range(self.N):
             if i == informationindex[j]:
@@ -58,24 +58,28 @@ class ListDecoder:
                     if self.activePath[l] == True:
                         tmp_list[2*l] = np.insert(self.hat_message_list[l],
                                                   i, np.array([0]))
-                        tmp_list[2*l +
-                                 1] = np.insert(self.hat_message_list[l], i, np.array([1]))
+                        tmp_list[2*l + 1] = np.insert(self.hat_message_list[l], i, np.array([1]))
                         tmp_activePath[2*l] = True
                         tmp_activePath[2*l + 1] = True
-                        tmp_W[2*l] = CalculateW_BSC(P, self.N, self.chaneloutput, i, np.array(
-                            [0], dtype=np.uint8), self.hat_message_list[l], self.matrixP[l], 0)
-                        tmp_W[2*l + 1] = CalculateW_BSC(P, self.N, self.chaneloutput, i, np.array(
-                            [1], dtype=np.uint8), self.hat_message_list[l], self.matrixP[l], 0)
-                        #print(tmp_list[2*l], tmp_W[2*l])
-                        #print(tmp_list[2*l+1], tmp_W[2*l+1])
-                        #print(tmp_W[2*l], ",", tmp_W[2*l+1])
+                        #tmp_W[2*l] = CalculateW_BSC(P, self.N, self.chaneloutput, i, np.array(
+                        #    [0], dtype=np.uint8), self.hat_message_list[l], self.matrixP[l], 0)
+                        #tmp_W[2*l + 1] = CalculateW_BSC(P, self.N, self.chaneloutput, i, np.array(
+                        #    [1], dtype=np.uint8), self.hat_message_list[l], self.matrixP[l], 0)
+                        tmp_W[2*l] = CalculateW_BSC_2(P, self.N, self.chaneloutput, i, np.array(
+                            [0], dtype=np.uint8), self.hat_message_list[l])
+                        tmp_W[2*l + 1] = CalculateW_BSC_2(P, self.N, self.chaneloutput, i, np.array(
+                            [1], dtype=np.uint8), self.hat_message_list[l])
+                        if self.checker:
+                            print(tmp_list[2*l], tmp_W[2*l])
+                            print(tmp_list[2*l+1], tmp_W[2*l+1])
+                            #print(tmp_W[2*l], ",", tmp_W[2*l+1])
                 # ここまでで全てのパスを2倍に複製し、各々の事後確率を計算した。
-                #print(nomalaizer)
 
-                # print(tmp_list)
                 sort_W_index = np.argsort(tmp_W)
                 sort_W_index = sort_W_index[-1::-1]
                 sort_W_index = sort_W_index[:self.L]
+                if self.checker:
+                    print(sort_W_index)
                 # print(sort_W_index)
                 # 事後確率が大きいL個のインデックスを取り出した
 
@@ -86,6 +90,8 @@ class ListDecoder:
                         self.activePath[l] = True
 
                 j += 1
+                if self.checker:
+                    print("----------------------------------------------------------------")
             else:
                 for l in range(self.L):
                     if self.activePath[l] == True:
@@ -95,7 +101,7 @@ class ListDecoder:
             # print(self.hat_message_list)
         # ここまででメインの処理はおわり？
 
-        if False:
+        if self.checker:
             print("最終的な候補")
             for l in range(self.L):
                 print(self.hat_message_list[l])
@@ -128,7 +134,7 @@ class ListDecoder:
         """
         self.DecodeOutput(P)
         if self.checker == True:
-            print("メッセージもどき推定値:\t", self.hat_message_prime)
+            print("SCLメッセージ？推定値:\t", self.hat_message_prime)
 
         informationindex = np.sort(
             GetInformationIndex(self.K, self.path)[:self.K])
@@ -195,7 +201,8 @@ class Decoder:
                 [0]), estimatedcodeword, matrixP, 0)
             W_1 = CalculateW_BSC(P, N, chaneloutput, i, np.array(
                 [1]), estimatedcodeword, matrixP, 0)
-            return 0 if W_0 >= W_1 else 1
+            #print(W_0/W_1)
+            return 0 if W_0 > W_1 else 1
         elif self.chaneltype == "BEC":
             W_0 = CalculateW_BEC(P, N, chaneloutput, i, np.array(
                 [0]), estimatedcodeword, matrixP, 0)
@@ -213,7 +220,7 @@ class Decoder:
         """
         self.DecodeOutput(P)
         if self.checker == True:
-            print("メッセージもどき推定値:\t", self.hat_message_prime)
+            print(" SCメッセージ？推定値:\t", self.hat_message_prime)
 
         informationindex = np.sort(
             GetInformationIndex(self.K, self.path)[:self.K])
