@@ -1,9 +1,10 @@
 import numpy as np
 from decimal import Decimal
 from decimal import getcontext
-getcontext().prec = 128
+getcontext().prec = 50
 
-a = Decimal("0.55")
-b = Decimal("0.11")
+a = Decimal("1")
 
-print(a/b)
+for i in range(100):
+    a /= 11
+    print(a)
