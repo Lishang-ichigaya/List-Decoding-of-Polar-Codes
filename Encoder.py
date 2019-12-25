@@ -38,7 +38,6 @@ class Encoder:
     def GetMessagePrime(self):
         return self.message_prime
 
-
 def GetGeneratorMatrix(N):
     """
     ポーラ符号の生成行列を作成
@@ -56,7 +55,6 @@ def GetGeneratorMatrix(N):
             np.kron(matrixF, tmp)
         )
     return matrixG
-
 
 def GetPermutationMatrix(M):
     """
@@ -79,7 +77,6 @@ def GetPermutationMatrix(M):
     matrixR = np.concatenate([matrixEven, matrixOdd]).T
     return matrixR
 
-
 def GetInformationIndex(K, path):
     """
     情報ビットに対応するインデックス集合を得る
@@ -92,14 +89,15 @@ def GetInformationIndex(K, path):
     # 相互情報量の小さい順に、インデックスを並べ替えたものを外部で用意しておく
     return np.sort(informationindex[:K])
 
-
 if __name__ == "__main__":
-    K = 16
-    N = 32
-    path = "./sort_I/sort_I_5_0.11_20.dat"
-    message = np.array([1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0])
+    K = 4
+    N = 8
+    #path = "./sort_I/sort_I_2_0.11_20.dat"
+    path = "./sort_I/sortI_BEC_0.5_8.dat"
+    message = np.array([1, 1, 1, 1])
     encoder0 = Encoder(K, N, message, path)
     encoder0.MakeCodeworde()
 
     print(encoder0.message)
+    print(GetGeneratorMatrix(N))
     print(encoder0.codeword)

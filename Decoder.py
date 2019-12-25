@@ -2,6 +2,7 @@ import numpy as np
 from CaliculateW import CalculateW_BSC
 from CaliculateW import CalculateW_BSC_2
 from CaliculateW import CalculateW_BEC
+from CaliculateW import CalculateW_BEC_2
 from decimal import Decimal
 from decimal import getcontext
 getcontext().prec = 28
@@ -9,6 +10,7 @@ from Encoder import GetInformationIndex
 from Encoder import GetGeneratorMatrix
 from CaliculateLR import CalculateLR_BSC
 from CaliculateLR import CalculateLR_BEC
+from CaliculateLR import CalculateLR_BEC_2
 
 class ListDecoder:
     def __init__(self, K, N, L, chaneloutput, chaneltype, path, checker=True):
@@ -151,7 +153,6 @@ class ListDecoder:
                     j = self.K-1
         self.hat_message = message
 
-
 class DecoderW:
     def __init__(self, K, N, chaneloutput, chaneltype, path, checker=True):
         """
@@ -205,11 +206,11 @@ class DecoderW:
             #print(W_0/W_1)
             return 0 if W_0 > W_1 else 1
         elif self.chaneltype == "BEC":
-            W_0 = CalculateW_BEC(P, N, chaneloutput, i, np.array(
-                [0]), estimatedcodeword, matrixP, 0)
-            W_1 = CalculateW_BEC(P, N, chaneloutput, i, np.array(
-                [1]), estimatedcodeword, matrixP, 0)
-            return 0 if W_0 >= W_1 else 1
+            W_0 = CalculateW_BEC_2(P, N, chaneloutput, i, np.array(
+                [0]), estimatedcodeword)
+            W_1 = CalculateW_BEC_2(P, N, chaneloutput, i, np.array(
+                [1]), estimatedcodeword)
+            return 0 if W_0 > W_1 else 1
         else:
             exit(1)
 
@@ -268,9 +269,22 @@ class DecoderLR:
         # 事後確率の値を格納する配列
         j = 0
         for i in range(self.N):
+            if self.chaneltype == "BSC":
+                LR = CalculateLR_BSC(P, self.N, self.chaneloutput, i, estimatedcodeword, matrixP, 0)
+            elif self.chaneltype == "BEC":
+                LR = CalculateLR_BEC(P, self.N, self.chaneloutput, i, estimatedcodeword, matrixP, 0)
+                #LR = CalculateLR_BEC_2(P, self.N, self.chaneloutput, i, estimatedcodeword)
+        
             if i == informationindex[j]:
-                hat_ui = self.EstimateCodeword_ibit(
-                    P, self.N, self.chaneloutput, i, estimatedcodeword, matrixP)
+                if False and i==self.N-1:
+                    with open("yuudohi.csv",mode='a') as f:
+                        for k in range(self.N):
+                            for l in range(int(np.log2(self.N))+1)[::-1]:
+                                f.write(str(matrixP[k][l])+", ")
+                            if k in informationindex:
+                                f.write("★, ")
+                            f.write("\n")
+                hat_ui = 0 if LR > 1 else 1
                 j += 1
             else:
                 hat_ui = 0
@@ -287,6 +301,8 @@ class DecoderLR:
             return 0 if LR > 1 else 1
         elif self.chaneltype == "BEC":
             LR = CalculateLR_BEC(P, N, chaneloutput, i, estimatedcodeword, matrixP, 0)
+            if LR == Decimal("1"):
+                print("-------------------------------------------------------------")
             return 0 if LR > 1 else 1
         else:
             exit(1)
