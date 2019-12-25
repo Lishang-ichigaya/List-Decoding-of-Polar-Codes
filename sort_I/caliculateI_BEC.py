@@ -13,7 +13,7 @@ def CaliculateI_BEC(e, N, i):
 
 if __name__ == "__main__":
     e = 0.1
-    N = 512
+    N = 1024
     sum = 0
     I_i = {}
     for i in range(N):
