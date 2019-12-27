@@ -74,8 +74,6 @@ def CalculateLR_BSC(p, N, chaneloutput_y, i, estimatedcodeword_u, LRmatrix, bran
             LR = np.reciprocal(LR1) * LR2
     LRmatrix[i + N * branch][M] = LR
     #print(i, M, '{:.30f}'.format(LR))
-    if LR == Decimal("1"):
-        print(M, i) 
     return LR
 
 def CalculateLR_BEC(e, N, chaneloutput_y, i, estimatedcodeword_u, LRmatrix, branch):

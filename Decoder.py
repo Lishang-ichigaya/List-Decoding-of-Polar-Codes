@@ -276,14 +276,14 @@ class DecoderLR:
                 #LR = CalculateLR_BEC_2(P, self.N, self.chaneloutput, i, estimatedcodeword)
         
             if i == informationindex[j]:
-                if False and i==self.N-1:
-                    with open("yuudohi.csv",mode='a') as f:
-                        for k in range(self.N):
-                            for l in range(int(np.log2(self.N))+1)[::-1]:
-                                f.write(str(matrixP[k][l])+", ")
-                            if k in informationindex:
-                                f.write("★, ")
-                            f.write("\n")
+                #if False and i==self.N-1:
+                #    with open("yuudohi.csv",mode='a') as f:
+                #        for k in range(self.N):
+                #            for l in range(int(np.log2(self.N))+1)[::-1]:
+                #                f.write(str(matrixP[k][l])+", ")
+                #            if k in informationindex:
+                #                f.write("★, ")
+                #            f.write("\n")
                 hat_ui = 0 if LR > 1 else 1
                 j += 1
             else:
