@@ -26,7 +26,7 @@ if __name__ == '__main__':
     #kaisu = 100
     if len(sys.argv) == 2:
         if sys.argv[1] == "ber":
-            kaisu = 100000
+            kaisu = 3000
 
             for P in [0.06]:
                 #if False:
