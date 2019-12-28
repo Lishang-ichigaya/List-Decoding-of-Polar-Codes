@@ -98,10 +98,10 @@ def CalculateW_BSC_2(p, N, chaneloutput_y, i, u_i, estimatedcodeword_u):
 
     if M == 0:
         # 再起の終了条件
-        if u_i == np.array([0], dtype=np.uint8):
-            W = Decimal(1-p) if chaneloutput_y == np.array([0], dtype=np.uint8) else Decimal(p)
-        elif u_i == np.array([1], dtype=np.uint8):
-            W = Decimal(p) if chaneloutput_y == np.array([0], dtype=np.uint8) else Decimal(1-p)
+        if u_i == np.array([0]):
+            W = Decimal(1-p) if chaneloutput_y == np.array([0]) else Decimal(p)
+        elif u_i == np.array([1]):
+            W = Decimal(p) if chaneloutput_y == np.array([0]) else Decimal(1-p)
         else:
             print("error")
             exit(1)  # 起こったらだめ
