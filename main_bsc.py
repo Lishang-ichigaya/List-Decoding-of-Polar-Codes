@@ -14,9 +14,9 @@ from Decoder import ListDecoder
 from binaryenthoropy import BinaryEntropy
 
 if __name__ == '__main__':
-    K = 32
-    N = 64
-    L = 4
+    K = 16
+    N = 32
+    L = 1
     M = int(np.log2(N))
     chaneltype = "BSC"
     P = 0.06
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     #kaisu = 100
     if len(sys.argv) == 2:
         if sys.argv[1] == "ber":
-            kaisu = 3000
+            kaisu = 100
 
             for P in [0.06]:
                 #if False:
@@ -55,13 +55,13 @@ if __name__ == '__main__':
                         bsc.Transmission()
                         output = bsc.output
                     
-                        decoder0 = DecoderLR(K, N ,output, chaneltype, path, False)
+                        decoder0 = DecoderW(K, N ,output, chaneltype, path, False)
                         decoder0.DecodeMessage(P)
                         hat_message0 = Message(K)
                         hat_message0.message = decoder0.hat_message
 
-                        #decoder1 = ListDecoder(K, N ,L, output, chaneltype, path, False)
-                        decoder1 = DecoderW(K, N ,output, chaneltype, path, False)
+                        decoder1 = ListDecoder(K, N ,L, output, chaneltype, path, False)
+                        #decoder1 = DecoderW(K, N ,output, chaneltype, path, False)
                         decoder1.DecodeMessage(P)
                         hat_message1 = Message(K)
                         hat_message1.message = decoder1.hat_message
@@ -77,19 +77,19 @@ if __name__ == '__main__':
                         print(i, "/", kaisu, "回目, ",0 if np.count_nonzero(error0) == 0 else 1,0 if np.count_nonzero(error1) == 0 else 1)
                     end = time.time()
 
-                    if True:
+                    if False:
                         with open("bsc_scltakusan.txt",mode='a',encoding='utf-8') as f:
                             f.write("K="+str(K)+", N="+str(N)+", P="+str(P)+"\n")
                             f.write("送信: "+ str(K*kaisu)+", LR復号誤り: "+ str(eroorcount1)+"\n")
-                            #f.write("FER__W: "+ str(frameerrorcout0/kaisu)+"\n")
+                            f.write("FER__W: "+ str(frameerrorcout0/kaisu)+"\n")
                             f.write("FER_LR: "+ str(frameerrorcout1/kaisu)+"\n")
-                            #f.write("BER__W: "+ str(eroorcount0/(K*kaisu))+"\n")
+                            f.write("BER__W: "+ str(eroorcount0/(K*kaisu))+"\n")
                             f.write("BER_LR: "+ str(eroorcount1/(K*kaisu))+"\n")
                             f.write("実行時間: "+ str(end-start)+"\n")
                     
                     if True:
                         print("K="+str(K)+", N="+str(N)+", P="+str(P))
-                        print("送信: "+ str(K*kaisu)+", LR復号誤り: "+ str(eroorcount1))
+                        print("送信: "+ str(K*kaisu)+", SC復号誤り: "+ str(eroorcount0)+", SCL復号誤り: "+ str(eroorcount1))
                         print("FER__SC: "+ str(frameerrorcout0/kaisu))
                         print("FER_SCL: "+ str(frameerrorcout1/kaisu))
                         print("BER__SC: "+ str(eroorcount0/(K*kaisu)))
@@ -118,17 +118,18 @@ if __name__ == '__main__':
         decoder0.DecodeMessage(P)
         hat_message0 = Message(K)
         hat_message0.message = decoder0.hat_message
-        print("SC メッセージ推定値:\t", hat_message0.message)
+        print("LRメッセージ推定値:\t", hat_message0.message)
 
-        decoder1 = ListDecoder(K, N, L, output, chaneltype, path)
+        #decoder1 = ListDecoder(K, N, L, output, chaneltype, path)
+        decoder1 = DecoderW(K, N, output, chaneltype, path)
         decoder1.DecodeMessage(P)
         hat_message1 = Message(K)
         hat_message1.message = decoder1.hat_message
-        print("SCLメッセージ推定値:\t", hat_message1.message)
+        print("Wメッセージ推定値:\t", hat_message1.message)
 
         #print("本当のメッセージもどき:\t", encoder0.GetMessagePrime())
 
         error0 = np.bitwise_xor(message.message, hat_message0.message)
-        print(" SC誤り数:", np.count_nonzero(error0))
+        print("LR誤り数:", np.count_nonzero(error0))
         error1 = np.bitwise_xor(message.message, hat_message1.message)
-        print("SCL誤り数:", np.count_nonzero(error1))
+        print(" W誤り数:", np.count_nonzero(error1))

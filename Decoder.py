@@ -64,25 +64,18 @@ class ListDecoder:
                         tmp_list[2*l + 1] = np.insert(self.hat_message_list[l], i, np.array([1]))
                         tmp_activePath[2*l] = True
                         tmp_activePath[2*l + 1] = True
-                        #tmp_W[2*l] = CalculateW_BSC(P, self.N, self.chaneloutput, i, np.array(
-                        #    [0], dtype=np.uint8), self.hat_message_list[l], self.matrixP[l], 0)
-                        #tmp_W[2*l + 1] = CalculateW_BSC(P, self.N, self.chaneloutput, i, np.array(
-                        #    [1], dtype=np.uint8), self.hat_message_list[l], self.matrixP[l], 0)
                         tmp_W[2*l] = CalculateW_BSC_2(P, self.N, self.chaneloutput, i, np.array(
                             [0], dtype=np.uint8), self.hat_message_list[l])
                         tmp_W[2*l + 1] = CalculateW_BSC_2(P, self.N, self.chaneloutput, i, np.array(
                             [1], dtype=np.uint8), self.hat_message_list[l])
-                        if self.checker:
-                            print(tmp_list[2*l], tmp_W[2*l])
-                            print(tmp_list[2*l+1], tmp_W[2*l+1])
-                            #print(tmp_W[2*l], ",", tmp_W[2*l+1])
+                        #print(tmp_list[2*l], tmp_W[2*l])
+                        #print(tmp_list[2*l+1], tmp_W[2*l+1])
+                        #print(tmp_W[2*l], ",", tmp_W[2*l+1])
                 # ここまでで全てのパスを2倍に複製し、各々の事後確率を計算した。
 
                 sort_W_index = np.argsort(tmp_W)
                 sort_W_index = sort_W_index[-1::-1]
                 sort_W_index = sort_W_index[:self.L]
-                if self.checker:
-                    print(sort_W_index)
                 # print(sort_W_index)
                 # 事後確率が大きいL個のインデックスを取り出した
 
@@ -91,15 +84,12 @@ class ListDecoder:
                         self.hat_message_list[l] = tmp_list[sort_W_index[l]]
                         # print(self.hat_message_list[l])
                         self.activePath[l] = True
-
                 j += 1
-                if self.checker:
-                    print("----------------------------------------------------------------")
+    
             else:
                 for l in range(self.L):
                     if self.activePath[l] == True:
-                        self.hat_message_list[l] = np.insert(
-                            self.hat_message_list[l], i, np.array([0]))
+                        self.hat_message_list[l] = np.insert(self.hat_message_list[l], i, np.array([0]))
 
             # print(self.hat_message_list)
         # ここまででメインの処理はおわり？
@@ -110,25 +100,6 @@ class ListDecoder:
                 print(self.hat_message_list[l])
 
         self.hat_message_prime = self.hat_message_list[0]
-
-    def EstimateCodeword_ibit(self, P, N, chaneloutput, i, estimatedcodeword, matrixP):
-        """
-        符号語のibit目を求める
-        """
-        if self.chaneltype == "BSC":
-            W_0 = CalculateW_BSC(P, N, chaneloutput, i, np.array(
-                [0]), estimatedcodeword, matrixP, 0)
-            W_1 = CalculateW_BSC(P, N, chaneloutput, i, np.array(
-                [1]), estimatedcodeword, matrixP, 0)
-            return 0 if W_0 >= W_1 else 1
-        elif self.chaneltype == "BEC":
-            W_0 = CalculateW_BEC(P, N, chaneloutput, i, np.array(
-                [0]), estimatedcodeword, matrixP, 0)
-            W_1 = CalculateW_BEC(P, N, chaneloutput, i, np.array(
-                [1]), estimatedcodeword, matrixP, 0)
-            return 0 if W_0 >= W_1 else 1
-        else:
-            exit(1)
 
     def DecodeMessage(self, P):
         """
@@ -183,36 +154,29 @@ class DecoderW:
         matrixP = np.full((self.N,  int(np.log2(self.N))+1, 2), Decimal("-1"))
         # 事後確率の値を格納する配列
         j = 0
-        for i in range(self.N):
-            if i == informationindex[j]:
-                hat_ui = self.EstimateCodeword_ibit(
-                    P, self.N, self.chaneloutput, i, estimatedcodeword, matrixP)
-                j += 1
-            else:
-                hat_ui = 0
-            estimatedcodeword = np.insert(estimatedcodeword, i, hat_ui)
+        if self.chaneltype == "BSC":
+            for i in range(self.N):
+                W_0 = CalculateW_BSC(P, self.N, self.chaneloutput, i, np.array([0],dtype=np.uint8), estimatedcodeword, matrixP, 0)
+                W_1 = CalculateW_BSC(P, self.N, self.chaneloutput, i, np.array([1],dtype=np.uint8), estimatedcodeword, matrixP, 0)
+                if i == informationindex[j]:
+                    hat_ui = 0 if W_0 > W_1 else 1
+                    j += 1
+                else:
+                    hat_ui = 0
+                estimatedcodeword = np.insert(estimatedcodeword, i, hat_ui)
+
+        if self.chaneltype == "BEC":
+            for i in range(self.N):
+                W_0 = CalculateW_BEC(P, self.N, self.chaneloutput, i, np.array([0],dtype=np.uint8), estimatedcodeword, matrixP, 0)
+                W_1 = CalculateW_BEC(P, self.N, self.chaneloutput, i, np.array([1],dtype=np.uint8), estimatedcodeword, matrixP, 0)
+                if i == informationindex[j]:
+                    hat_ui = 0 if W_0 > W_1 else 1
+                    j += 1
+                else:
+                    hat_ui = 0
+                estimatedcodeword = np.insert(estimatedcodeword, i, hat_ui)
 
         self.hat_message_prime = estimatedcodeword
-
-    def EstimateCodeword_ibit(self, P, N, chaneloutput, i, estimatedcodeword, matrixP):
-        """
-        符号語のibit目を求める
-        """
-        if self.chaneltype == "BSC":
-            W_0 = CalculateW_BSC_2(P, N, chaneloutput, i, np.array(
-                [0]), estimatedcodeword)
-            W_1 = CalculateW_BSC_2(P, N, chaneloutput, i, np.array(
-                [1]), estimatedcodeword)
-            #print(W_0/W_1)
-            return 0 if W_0 > W_1 else 1
-        elif self.chaneltype == "BEC":
-            W_0 = CalculateW_BEC_2(P, N, chaneloutput, i, np.array(
-                [0]), estimatedcodeword)
-            W_1 = CalculateW_BEC_2(P, N, chaneloutput, i, np.array(
-                [1]), estimatedcodeword)
-            return 0 if W_0 > W_1 else 1
-        else:
-            exit(1)
 
     def DecodeMessage(self, P):
         """
@@ -276,6 +240,7 @@ class DecoderLR:
                 #LR = CalculateLR_BEC_2(P, self.N, self.chaneloutput, i, estimatedcodeword)
         
             if i == informationindex[j]:
+                #print(i,type(LR),LR)
                 #if False and i==self.N-1:
                 #    with open("yuudohi.csv",mode='a') as f:
                 #        for k in range(self.N):
@@ -291,21 +256,6 @@ class DecoderLR:
             estimatedcodeword = np.insert(estimatedcodeword, i, hat_ui)
 
         self.hat_message_prime = estimatedcodeword
-
-    def EstimateCodeword_ibit(self, P, N, chaneloutput, i, estimatedcodeword, matrixP):
-        """
-        符号語のibit目を求める
-        """
-        if self.chaneltype == "BSC":
-            LR = CalculateLR_BSC(P, N, chaneloutput, i, estimatedcodeword, matrixP, 0)
-            return 0 if LR > 1 else 1
-        elif self.chaneltype == "BEC":
-            LR = CalculateLR_BEC(P, N, chaneloutput, i, estimatedcodeword, matrixP, 0)
-            if LR == Decimal("1"):
-                print("-------------------------------------------------------------")
-            return 0 if LR > 1 else 1
-        else:
-            exit(1)
 
     def DecodeMessage(self, P):
         """
