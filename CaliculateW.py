@@ -1,7 +1,7 @@
 import numpy as np
 from decimal import Decimal
 from decimal import getcontext
-getcontext().prec = 28
+
 
 # i +
 #  n * branch,  m=log2(n)
@@ -26,9 +26,9 @@ def CalculateW_BSC(p, N, chaneloutput_y, i, u_i, estimatedcodeword_u, matrixP, b
     if M == 0:
         # 再起の終了条件
         if u_i == np.array([0]):
-            W = Decimal(1-p) if chaneloutput_y == np.array([0]) else Decimal(p)
+            W = Decimal(str(1-p)) if chaneloutput_y == np.array([0]) else Decimal(str(p))
         elif u_i == np.array([1]):
-            W = Decimal(p) if chaneloutput_y == np.array([0]) else Decimal(1-p)
+            W = Decimal(str(p)) if chaneloutput_y == np.array([0]) else Decimal(str(1-p))
         else:
             print("error")
             exit(1)  # 起こったらだめ
@@ -65,23 +65,24 @@ def CalculateW_BSC(p, N, chaneloutput_y, i, u_i, estimatedcodeword_u, matrixP, b
 
     # Arikanが提案した再起式に従って、再帰的に計算。
     if i % 2 == 0:
-        #u_i+1が0と1の場合について和をとる
+        # u_i+1が0と1の場合について和をとる
         u_i_puls_1 = np.array([0], dtype=np.uint8)
-        W_1 = (Decimal(1/2) 
-            * CalculateW_BSC(p, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1, matrixP,2*branch)
-            * CalculateW_BSC(p, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2, matrixP, 2*branch+1))
+        W_1 = (Decimal(1/2)
+               * CalculateW_BSC(p, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1, matrixP, 2*branch)
+               * CalculateW_BSC(p, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2, matrixP, 2*branch+1))
         u_i_puls_1 = np.array([1], dtype=np.uint8)
-        W_2 = (Decimal(1/2) 
-            * CalculateW_BSC(p, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1, matrixP,2*branch)
-            * CalculateW_BSC(p, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2, matrixP, 2*branch+1))
+        W_2 = (Decimal(1/2)
+               * CalculateW_BSC(p, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1, matrixP, 2*branch)
+               * CalculateW_BSC(p, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2, matrixP, 2*branch+1))
         W = W_1 + W_2
     else:
-        W = (Decimal(1/2) 
-            * CalculateW_BSC(p, int(N/2), y_1, int(j/2), hat_u_i_minus_1 ^ u_i, hat_u1, matrixP,2*branch)
-            * CalculateW_BSC(p, int(N/2), y_2, int(j/2), u_i, hat_u2, matrixP, 2*branch+1))
+        W = (Decimal(1/2)
+             * CalculateW_BSC(p, int(N/2), y_1, int(j/2), hat_u_i_minus_1 ^ u_i, hat_u1, matrixP, 2*branch)
+             * CalculateW_BSC(p, int(N/2), y_2, int(j/2), u_i, hat_u2, matrixP, 2*branch+1))
     matrixP[i + N * branch][M][u_i[0]] = W
-    #print(W)
+    # print(W)
     return W
+
 
 def CalculateW_BSC_2(p, N, chaneloutput_y, i, u_i, estimatedcodeword_u):
     """
@@ -137,21 +138,22 @@ def CalculateW_BSC_2(p, N, chaneloutput_y, i, u_i, estimatedcodeword_u):
 
     # Arikanが提案した再起式に従って、再帰的に計算。
     if i % 2 == 0:
-        #u_i+1が0と1の場合について和をとる
+        # u_i+1が0と1の場合について和をとる
         u_i_puls_1 = np.array([0], dtype=np.uint8)
         W_1 = (Decimal(1/2)
-            * CalculateW_BSC_2(p, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1)
-            * CalculateW_BSC_2(p, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2))
+               * CalculateW_BSC_2(p, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1)
+               * CalculateW_BSC_2(p, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2))
         u_i_puls_1 = np.array([1], dtype=np.uint8)
         W_2 = (Decimal(1/2)
-            * CalculateW_BSC_2(p, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1)
-            * CalculateW_BSC_2(p, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2))
+               * CalculateW_BSC_2(p, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1)
+               * CalculateW_BSC_2(p, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2))
         W = W_1 + W_2
     else:
         W = (Decimal(1/2)
-            * CalculateW_BSC_2(p, int(N/2), y_1, int(j/2), hat_u_i_minus_1 ^ u_i, hat_u1)
-            * CalculateW_BSC_2(p, int(N/2), y_2, int(j/2), u_i, hat_u2))
+             * CalculateW_BSC_2(p, int(N/2), y_1, int(j/2), hat_u_i_minus_1 ^ u_i, hat_u1)
+             * CalculateW_BSC_2(p, int(N/2), y_2, int(j/2), u_i, hat_u2))
     return W
+
 
 def CalculateW_BEC(e, N, chaneloutput_y, i, u_i, estimatedcodeword_u, matrixP, branch):
     """
@@ -221,22 +223,23 @@ def CalculateW_BEC(e, N, chaneloutput_y, i, u_i, estimatedcodeword_u, matrixP, b
 
     # Arikanが提案した再起式に従って、再帰的に計算。
     if i % 2 == 0:
-        #u_i+1が0と1の場合について和をとる
+        # u_i+1が0と1の場合について和をとる
         u_i_puls_1 = np.array([0], dtype=np.uint8)
-        W_1 = (Decimal(1/2) 
-            * CalculateW_BEC(e, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1, matrixP,2*branch)
-            * CalculateW_BEC(e, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2, matrixP, 2*branch+1))
+        W_1 = (Decimal(1/2)
+               * CalculateW_BEC(e, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1, matrixP, 2*branch)
+               * CalculateW_BEC(e, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2, matrixP, 2*branch+1))
         u_i_puls_1 = np.array([1], dtype=np.uint8)
-        W_2 = (Decimal(1/2) 
-            * CalculateW_BEC(e, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1, matrixP,2*branch)
-            * CalculateW_BEC(e, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2, matrixP, 2*branch+1))
+        W_2 = (Decimal(1/2)
+               * CalculateW_BEC(e, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1, matrixP, 2*branch)
+               * CalculateW_BEC(e, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2, matrixP, 2*branch+1))
         W = W_1 + W_2
     else:
-        W = (Decimal(1/2) 
-            * CalculateW_BEC(e, int(N/2), y_1, int(j/2), hat_u_i_minus_1 ^ u_i, hat_u1, matrixP,2*branch)
-            * CalculateW_BEC(e, int(N/2), y_2, int(j/2), u_i, hat_u2, matrixP, 2*branch+1))
+        W = (Decimal(1/2)
+             * CalculateW_BEC(e, int(N/2), y_1, int(j/2), hat_u_i_minus_1 ^ u_i, hat_u1, matrixP, 2*branch)
+             * CalculateW_BEC(e, int(N/2), y_2, int(j/2), u_i, hat_u2, matrixP, 2*branch+1))
     matrixP[i + N * branch][M][u_i[0]] = W
     return W
+
 
 def CalculateW_BEC_2(e, N, chaneloutput_y, i, u_i, estimatedcodeword_u):
     """
@@ -301,33 +304,33 @@ def CalculateW_BEC_2(e, N, chaneloutput_y, i, u_i, estimatedcodeword_u):
 
     # Arikanが提案した再起式に従って、再帰的に計算。
     if i % 2 == 0:
-        #u_i+1が0と1の場合について和をとる
+        # u_i+1が0と1の場合について和をとる
         u_i_puls_1 = np.array([0], dtype=np.uint8)
-        W_1 = (Decimal(1/2) 
-            * CalculateW_BEC_2(e, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1)
-            * CalculateW_BEC_2(e, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2))
+        W_1 = (Decimal(1/2)
+               * CalculateW_BEC_2(e, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1)
+               * CalculateW_BEC_2(e, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2))
         u_i_puls_1 = np.array([1], dtype=np.uint8)
-        W_2 = (Decimal(1/2) 
-            * CalculateW_BEC_2(e, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1)
-            * CalculateW_BEC_2(e, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2))
+        W_2 = (Decimal(1/2)
+               * CalculateW_BEC_2(e, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1)
+               * CalculateW_BEC_2(e, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2))
         W = W_1 + W_2
     else:
-        W = (Decimal(1/2) 
-            * CalculateW_BEC_2(e, int(N/2), y_1, int(j/2), hat_u_i_minus_1 ^ u_i, hat_u1)
-            * CalculateW_BEC_2(e, int(N/2), y_2, int(j/2), u_i, hat_u2))
+        W = (Decimal(1/2)
+             * CalculateW_BEC_2(e, int(N/2), y_1, int(j/2), hat_u_i_minus_1 ^ u_i, hat_u1)
+             * CalculateW_BEC_2(e, int(N/2), y_2, int(j/2), u_i, hat_u2))
     return W
 
 
 if __name__ == "__main__":
-    p = 0.11
-    N = 4
-    chaneloutput = np.array([0,1,1,1])
-    u_0to1 = np.array([0,0])
-    i = 2
+    p = 0.06
+    N = 32
+    chaneloutput = np.array([1,0,1,0,1,0,0,1,1,1,1,0,0,0,1,0,0,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1])
+    u_0toi = np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,1,1,1,1,0,1])
+    i = 31
+
     u_i = np.array([0])
-    
-    a = CalculateW_BSC_2(p, N, chaneloutput, i, np.array([0]), u_0to1)
+    a = CalculateW_BSC_2(p, N, chaneloutput, i, np.array([0]), u_0toi)
     print(a)
     u_i = np.array([1])
-    a = CalculateW_BSC_2(p, N, chaneloutput, i, np.array([1]), u_0to1)
+    a = CalculateW_BSC_2(p, N, chaneloutput, i, np.array([1]), u_0toi)
     print(a)
