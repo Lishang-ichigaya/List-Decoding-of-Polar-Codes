@@ -199,10 +199,10 @@ class DecoderW:
         符号語のibit目を求める
         """
         if self.chaneltype == "BSC":
-            W_0 = CalculateW_BSC(P, N, chaneloutput, i, np.array(
-                [0]), estimatedcodeword, matrixP, 0)
-            W_1 = CalculateW_BSC(P, N, chaneloutput, i, np.array(
-                [1]), estimatedcodeword, matrixP, 0)
+            W_0 = CalculateW_BSC_2(P, N, chaneloutput, i, np.array(
+                [0]), estimatedcodeword)
+            W_1 = CalculateW_BSC_2(P, N, chaneloutput, i, np.array(
+                [1]), estimatedcodeword)
             #print(W_0/W_1)
             return 0 if W_0 > W_1 else 1
         elif self.chaneltype == "BEC":
@@ -276,14 +276,14 @@ class DecoderLR:
                 #LR = CalculateLR_BEC_2(P, self.N, self.chaneloutput, i, estimatedcodeword)
         
             if i == informationindex[j]:
-                if False and i==self.N-1:
-                    with open("yuudohi.csv",mode='a') as f:
-                        for k in range(self.N):
-                            for l in range(int(np.log2(self.N))+1)[::-1]:
-                                f.write(str(matrixP[k][l])+", ")
-                            if k in informationindex:
-                                f.write("★, ")
-                            f.write("\n")
+                #if False and i==self.N-1:
+                #    with open("yuudohi.csv",mode='a') as f:
+                #        for k in range(self.N):
+                #            for l in range(int(np.log2(self.N))+1)[::-1]:
+                #                f.write(str(matrixP[k][l])+", ")
+                #            if k in informationindex:
+                #                f.write("★, ")
+                #            f.write("\n")
                 hat_ui = 0 if LR > 1 else 1
                 j += 1
             else:

@@ -17,7 +17,8 @@ if __name__ == '__main__':
     M = int(np.log2(N))
     chaneltype = "BEC"
     #e = 0.1
-    kaisu = 
+    kaisu = 10000
+
     #path = "./sort_I/sortI_BEC_"+ str(e) + "_" + str(N) + ".dat"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
 
@@ -38,6 +39,7 @@ if __name__ == '__main__':
                     K *= 2
                     N *= 2
                     path = "./sort_I/sortI_BEC_"+ str(e) + "_" + str(N) + ".dat"
+                    kaisu = 1000 if N==1024 else 10000
                     start = time.time()
                     for i in range(kaisu):
                         message = Message(K)
