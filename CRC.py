@@ -27,9 +27,9 @@ class CRC_Encoder(CRC):
             if tmp_CRC[i] == 1:
                 tmp_CRC = tmp_CRC ^ tmp_GenPolynomial
             tmp_GenPolynomial = np.roll(tmp_GenPolynomial, 1)
-        print(tmp_CRC)
+        #print(tmp_CRC)
         self.CRC = tmp_CRC[self.K:]
-        print(self.CRC)
+        #print(self.CRC)
 
     def Encode(self):
         self.MakeCRC()
@@ -42,7 +42,7 @@ class CRC_Detector(CRC):
         chaneloutput: 通信路出力
         """
         super().__init__(np.array([], dtype=np.uint8))
-        self.K = np.size(message) - self.r
+        self.K = np.size(message) - self.r + 1
         self.chaneloutput = chaneloutput
         self.remainder = np.array([], dtype=np.uint8)
         self.decector = False
@@ -57,7 +57,7 @@ class CRC_Detector(CRC):
 
     def Detecte(self):
         tmp_remainder = self.chaneloutput 
-        tmp_GenPolynomial = np.concatenate([self.GeneratorPolynomial, np.zeros(self.K+self.r-1, dtype=np.uint8)])
+        tmp_GenPolynomial = np.concatenate([self.GeneratorPolynomial, np.zeros(self.K + self.r-2, dtype=np.uint8)])
         #print(tmp_remainder)
         #print(tmp_GenPolynomial)
         for i in range(self.K + self.r):
@@ -73,22 +73,27 @@ class CRC_Detector(CRC):
         else:
             self.decector = False
 
+    def GetMessage(self):
+        return self.chaneloutput[:self.K]
+
         
 
 if __name__ == "__main__":
-    message = np.array([1,1,0,1,0,0,1,1,1,0,1,1,0,0,1], dtype=np.uint8)
+    message = np.array([1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0], dtype=np.uint8)
+    print("meg:",message)
     crcenc = CRC_Encoder(message)
     crcenc.Encode()
     codeword = crcenc.codeword
     print("enc:",codeword)
 
     output = codeword
-    output[2] += 1
-    output[7] += 1
+    #output[2] += 1
+    #output[7] += 1
     output %= 2
     crcdec = CRC_Detector(output)
     crcdec.Detecte()
     print("dec:", crcdec.remainder)
+    print("msg:",crcdec.GetMessage())
     print(crcdec.IsError())
 
 

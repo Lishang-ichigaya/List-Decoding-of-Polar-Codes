@@ -15,8 +15,8 @@ from Decoder import ListDecoder_F
 from binaryenthoropy import BinaryEntropy
 
 if __name__ == '__main__':
-    K = 128
-    N = 256
+    K = 256
+    N = 512
     L = 8
     M = int(np.log2(N))
     chaneltype = "BSC"
