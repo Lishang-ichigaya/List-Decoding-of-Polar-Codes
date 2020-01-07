@@ -42,12 +42,12 @@ class CRC_Detector(CRC):
         chaneloutput: 通信路出力
         """
         super().__init__(np.array([], dtype=np.uint8))
-        self.K = np.size(message) - self.r + 1
         self.chaneloutput = chaneloutput
+        self.K = np.size(chaneloutput) - self.r + 1
         self.remainder = np.array([], dtype=np.uint8)
         self.decector = False
 
-    def IsError(self):
+    def IsNoError(self):
         """
         CRCの計算を行い誤りが存在するか否かを返すメソッド。
         誤り無し：True，誤り有り：False を返す。
@@ -57,10 +57,10 @@ class CRC_Detector(CRC):
 
     def Detecte(self):
         tmp_remainder = self.chaneloutput 
-        tmp_GenPolynomial = np.concatenate([self.GeneratorPolynomial, np.zeros(self.K + self.r-2, dtype=np.uint8)])
+        tmp_GenPolynomial = np.concatenate([self.GeneratorPolynomial, np.zeros(self.K -1 , dtype=np.uint8)])
         #print(tmp_remainder)
         #print(tmp_GenPolynomial)
-        for i in range(self.K + self.r):
+        for i in range(self.K + self.r - 1):
             #print(tmp_GenPolynomial)
             if tmp_remainder[i] == 1:
                 tmp_remainder = tmp_remainder ^ tmp_GenPolynomial
@@ -79,8 +79,8 @@ class CRC_Detector(CRC):
         
 
 if __name__ == "__main__":
-    message = np.array([1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0], dtype=np.uint8)
-    print("meg:",message)
+    message = np.array([1,0,1,0,0,1,1,1,0,0,0,1,0,0,1,0,1,0,1,1,1,0,1,1,0,0,0,1,1,0,0,1], dtype=np.uint8)
+    print("msg:",message)
     crcenc = CRC_Encoder(message)
     crcenc.Encode()
     codeword = crcenc.codeword
@@ -94,6 +94,6 @@ if __name__ == "__main__":
     crcdec.Detecte()
     print("dec:", crcdec.remainder)
     print("msg:",crcdec.GetMessage())
-    print(crcdec.IsError())
+    print(crcdec.IsNoError())
 
 

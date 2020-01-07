@@ -322,15 +322,35 @@ def CalculateW_BEC_2(e, N, chaneloutput_y, i, u_i, estimatedcodeword_u):
 
 
 if __name__ == "__main__":
-    p = 0.06
-    N = 32
-    chaneloutput = np.array([1,0,1,0,1,0,0,1,1,1,1,0,0,0,1,0,0,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1])
-    u_0toi = np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,1,1,1,1,0,1])
-    i = 31
+    p = 0.11
+    N = 4
+    chaneloutput = np.array([0, 0, 0, 0])
+    u_0toi = np.array([])
 
-    u_i = np.array([0])
-    a = CalculateW_BSC_2(p, N, chaneloutput, i, np.array([0]), u_0toi)
-    print(a)
-    u_i = np.array([1])
-    a = CalculateW_BSC_2(p, N, chaneloutput, i, np.array([1]), u_0toi)
-    print(a)
+    sum = 0
+    y_0to3 = [np.array([0, 0, 0, 0]), np.array([0, 0, 0, 1]), np.array([0, 0, 1, 0]), np.array([0, 0, 1, 1]),
+              np.array([0, 1, 0, 0]), np.array([0, 1, 0, 1]), np.array([0, 1, 1, 0]), np.array([0, 1, 1, 1]),
+              np.array([1, 0, 0, 0]), np.array([1, 0, 0, 1]), np.array([1, 0, 1, 0]), np.array([1, 0, 1, 1]),
+              np.array([1, 1, 0, 0]), np.array([1, 1, 0, 1]), np.array([1, 1, 1, 0]), np.array([1, 1, 1, 1])]
+
+    i = 3
+    #all_u_0toi = [np.array([])]
+    #all_u_0toi = [np.array([0]), np.array([1])]
+    #all_u_0toi = [np.array([0,0]), np.array([1,0]),np.array([0,1]), np.array([1,1])]
+    all_u_0toi = [np.array([0, 0, 0]), np.array([1, 0, 0]), np.array([0, 1, 0]), np.array([1, 1, 0]),
+                  np.array([0, 0, 1]), np.array([1, 0, 1]), np.array([0, 1, 1]), np.array([1, 1, 1])]
+
+    for u_0toi in all_u_0toi:
+        for chaneloutput in y_0to3:
+            u_i = np.array([0])
+            a = CalculateW_BSC_2(p, N, chaneloutput, i, np.array([0]), u_0toi)
+            # print(a)
+            a = float(a)
+            u_i = np.array([1])
+            b = CalculateW_BSC_2(p, N, chaneloutput, i, np.array([1]), u_0toi)
+            # print(b)
+            b = float(b)
+            tmp1 = 0.5 * a * np.log2(a/(a+b))
+            tmp2 = 0.5 * b * np.log2(b/(a+b))
+            sum = sum + tmp1 + tmp2
+    print(i, ",", 1 + sum)

@@ -15,11 +15,11 @@ from Decoder import ListDecoder_F
 if __name__ == '__main__':
     K = 256
     N = 512
-    L = 4
+    L = 2
     M = int(np.log2(N))
     chaneltype = "BEC"
     e = 0.4
-    kaisu = 100
+    kaisu = 1000
 
     path = "./sort_I/sortI_BEC_"+ str(e) + "_" + str(N) + ".dat"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"

@@ -8,6 +8,7 @@ from CaliculateW import CalculateW_BSC
 from CaliculateW import CalculateW_BSC_2
 from CaliculateW import CalculateW_BEC
 from CaliculateW import CalculateW_BEC_2
+from CRC import CRC_Detector
 from decimal import Decimal
 from decimal import getcontext
 getcontext().prec = 28
@@ -58,7 +59,7 @@ class ListDecoder_F:
         tmp_activePath = [False] * (2 * self.L)
         if self.chaneltype == "BSC":
             for i in range(self.N):
-                #print("--------------------"+str(i)+"--------------------")
+                # print("--------------------"+str(i)+"--------------------")
                 if i == informationindex[j]:
                     for l in range(self.L):
                         if self.activePath[l] == True:
@@ -78,7 +79,7 @@ class ListDecoder_F:
                     sort_W_index = np.argsort(tmp_W)
                     sort_W_index = sort_W_index[-1::-1]
                     sort_W_index = sort_W_index[:self.L]
-                    #print(sort_W_index)
+                    # print(sort_W_index)
                     # 事後確率が大きいL個のインデックスを取り出した
                     for l in range(self.L):
                         if tmp_activePath[sort_W_index[l]] == True:
@@ -108,7 +109,7 @@ class ListDecoder_F:
                             tmp_W[2*l + 1] = CalculateW_BEC(P, self.N, self.chaneloutput, i, np.array(
                                 [1], dtype=np.uint8), self.hat_message_list[l], self.matrixP[l], 0)
                             tmp_matrixP[l] = self.matrixP[l]
-                        #パスを2倍にして、確率の計算
+                        # パスを2倍にして、確率の計算
                     sort_W_index = np.argsort(tmp_W)
                     sort_W_index = sort_W_index[-1::-1]
                     sort_W_index = sort_W_index[:self.L]
@@ -154,6 +155,55 @@ class ListDecoder_F:
                 if j > self.K-1:
                     j = self.K-1
         self.hat_message = message
+
+
+class ListDecoder_CRC(ListDecoder_F):
+    def __init__(self, K, N, L, chaneloutput, chaneltype, path, checker=True):
+        super().__init__(K, N, L, chaneloutput, chaneltype, path, checker)
+
+    def DecodeMessage(self, P):
+        """
+        メッセージを符号語から復元
+        P: 誤り確率
+        """
+        self.DecodeOutput(P)
+
+        informationindex = np.sort(GetInformationIndex(self.K, self.path)[:self.K])
+        is_nocrc = True
+        likelypass = self.hat_message_list[0]
+
+        for l in range(self.L):
+            j = 0
+            message = np.array([], dtype=np.uint8)
+            for i in range(self.N):
+                if i == informationindex[j]:
+                    message_j = self.hat_message_list[l][i]
+                    message = np.insert(message, j, message_j)
+                    j += 1
+                    if j > self.K-1:
+                        j = self.K-1
+            crcdec = CRC_Detector(message)
+            if crcdec.IsNoError():
+                #CRCが一致した場合の操作
+                is_nocrc = False
+                #print("\t\t",l,"-----------------------------------------------")
+                #print("\t\t\t",message)
+                self.hat_message= message
+                break
+            #print(l)
+
+        if is_nocrc:
+            #CRCが一つも一致しない場合の操作
+            for i in range(self.N):
+                if i == informationindex[j]:
+                    message_j = likelypass[i]
+                    message = np.insert(message, j, message_j)
+                    j += 1
+                    if j > self.K-1:
+                        j = self.K-1
+            self.hat_message = message
+
+
 
 class ListDecoder:
     def __init__(self, K, N, L, chaneloutput, chaneltype, path, checker=True):
@@ -269,6 +319,7 @@ class ListDecoder:
                     j = self.K-1
         self.hat_message = message
 
+
 class DecoderW:
     def __init__(self, K, N, chaneloutput, chaneltype, path, checker=True):
         """
@@ -350,6 +401,7 @@ class DecoderW:
                 if j > self.K-1:
                     j = self.K-1
         self.hat_message = message
+
 
 class DecoderLR:
     def __init__(self, K, N, chaneloutput, chaneltype, path, checker=True):

@@ -18,7 +18,7 @@ from CRC import CRC_Detector
 
 if __name__ == '__main__':
     k = 256
-    r = 0  # CRCの長さを変更する場合はCRC.pyも書き換える
+    r = 3  # CRCの長さを変更する場合はCRC.pyも書き換える
     K = k + r
     N = 512
     L = 4
@@ -52,10 +52,10 @@ if __name__ == '__main__':
                         message = Message(k)
                         message.MakeMessage()
 
-                        #crcenc = CRC_Encoder(message.message)
-                        #crcenc.Encode()
+                        crcenc = CRC_Encoder(message.message)
+                        crcenc.Encode()
 
-                        encoder0 = Encoder(K, N, message.message, path, False)
+                        encoder0 = Encoder(K, N, crcenc.codeword, path, False)
                         encoder0.MakeCodeworde()
 
                         bsc = BSC(P)
@@ -63,32 +63,32 @@ if __name__ == '__main__':
                         bsc.Transmission()
                         output = bsc.output
 
-                        decoder0name = "_SC"
+                        #decoder0name = "_SC"
                         #start0 = time.time()
-                        decoder0 = DecoderW(K, N, output, chaneltype, path, False)
-                        decoder0.DecodeMessage(P)
-                        hat_message0 = Message(K)
-                        hat_message0.message = decoder0.hat_message
+                        #decoder0 = DecoderW(K, N, output, chaneltype, path, False)
+                        # decoder0.DecodeMessage(P)
+                        #hat_message0 = Message(K)
+                        #hat_message0.message = decoder0.hat_message
                         #end0 = time.time()
 
-                        decoder1name = "SCL"
+                        decoder1name = "CASCL"
                         #start1 = time.time()
-                        decoder1 = ListDecoder_F(K, N, L, output, chaneltype, path, False)
+                        decoder1 = ListDecoder_CRC(K, N, L, output, chaneltype, path, False)
                         decoder1.DecodeMessage(P)
                         hat_message1 = Message(k)
-                        hat_message1.message = decoder1.hat_message
+                        hat_message1.message = decoder1.hat_message[:k]
                         #end1 = time.time()
 
-                        error0 = np.bitwise_xor(message.message, hat_message0.message)
+                        #error0 = np.bitwise_xor(message.message, hat_message0.message)
                         error1 = np.bitwise_xor(message.message, hat_message1.message)
 
-                        eroorcount0 += np.count_nonzero(error0)
+                        #eroorcount0 += np.count_nonzero(error0)
                         eroorcount1 += np.count_nonzero(error1)
 
-                        frameerrorcout0 += 0 if np.count_nonzero(error0) == 0 else 1
+                        #frameerrorcout0 += 0 if np.count_nonzero(error0) == 0 else 1
                         frameerrorcout1 += 0 if np.count_nonzero(error1) == 0 else 1
                         print(i, "/", kaisu, "回目, ",
-                                0 if np.count_nonzero(error0) == 0 else 1,
+                              #        0 if np.count_nonzero(error0) == 0 else 1,
                               0 if np.count_nonzero(error1) == 0 else 1)
                         #print("FSCL:", "{0:.5f}".format(end0-start0), "SCL", "{0:.5f}".format(end1-start1))
                     end = time.time()
@@ -106,12 +106,12 @@ if __name__ == '__main__':
 
                     if True:
                         print("K="+str(K)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P))
-                        print("送信メッセージ数: " + str(K*kaisu)+", " + decoder0name + "復号誤り: " +
-                              str(eroorcount0)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
-                        #print("送信メッセージ数: " + str(K*kaisu)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
-                        print("FER_" + decoder0name + ": " + str(frameerrorcout0/kaisu))
+                        # print("送信メッセージ数: " + str(K*kaisu)+", " + decoder0name + "復号誤り: " +
+                        #      str(eroorcount0)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
+                        print("送信メッセージ数: " + str(K*kaisu)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
+                        #print("FER_" + decoder0name + ": " + str(frameerrorcout0/kaisu))
                         print("FER_" + decoder1name + ": " + str(frameerrorcout1/kaisu))
-                        print("BER_" + decoder0name + ": " + str(eroorcount0/(K*kaisu)))
+                        #print("BER_" + decoder0name + ": " + str(eroorcount0/(K*kaisu)))
                         print("BER_" + decoder1name + ": " + str(eroorcount1/(K*kaisu)))
                         print("実行時間: " + str(end-start))
 
