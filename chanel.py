@@ -1,5 +1,7 @@
 import numpy as np
 from numpy.random import rand
+import time
+from message import Message
 
 
 class BSC:
@@ -9,10 +11,11 @@ class BSC:
         self.output = np.array([], dtype=np.uint8)
 
     def Transmission(self):
-        for i in range(np.size(self.input)):
-            noise = 0 if rand() > self.P else 1
-            tmp = (self.input[i] + noise) % 2
-            self.output = np.insert(self.output, i, tmp)
+        n = np.size(self.input)
+        noise = rand(n)
+        binnoise = np.zeros([n], dtype=np.uint8)
+        binnoise[np.where(self.P > noise)] = 1
+        self.output = (self.input + binnoise) % 2
 
 
 class BEC:
@@ -28,36 +31,51 @@ class BEC:
 
 
 if __name__ == "__main__":
-    N = 16
-    input = np.array([1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0])
+    #    N = 16
+    #    input = np.array([1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0])
+    #    bsc = BSC(1)
+    #    bsc.input = input
+    #    bsc.Transmission2()
+    #    output = bsc.output
+    #    print(input)
+    #    print(output)
 
-    bsc = BSC(1)
-    bsc.input = input
-    bsc.Transmission()
-    
-    output = bsc.output
-    print(input)
-    print(output)
+    N = 512
+    kaisu = 10000
+    sum = 0
+    P = 0.7
+    a = 0
+    # start = time.time()
+    # for i in range(kaisu):
+    #     input = np.full([N], a, dtype=np.uint8)
 
-"""
-NNN = 12
-message = np.array([1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1])
-print("送信メッセージ:", end="")
-print(message)
-bsc = BSC()
-output = bsc.Transmission(NNN, message)
-print("受信メッセージ:", end="")
-print(output)
+    #     bsc = BSC(P)
+    #     bsc.input = input
+    #     bsc.Transmission()
 
-count = 0
-times =5000
-for i in range(times):
-    message = np.array([1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1])
-    bsc = BSC(0.9)
-    output = bsc.Transmission(NNN, message)
-    for j in range(NNN):
-        if output[j] != message[j]:
-            count += 1
+    #     output = bsc.output
+    #     sum += np.count_nonzero(output)
+    #     #print(sum)
+    #     #print(output)
+    # end = time.time()
+    # print("高速化なし")
+    # print("時間", end-start)
+    # print("誤り率", sum / (N * kaisu))
 
-print(count/(times*NNN) )
-"""
+    sum = 0
+    start = time.time()
+    for i in range(kaisu):
+        input = np.full([N], a, dtype=np.uint8)
+
+        bsc = BSC(P)
+        bsc.input = input
+        bsc.Transmission()
+
+        output = bsc.output
+        sum += np.count_nonzero(output)
+        # print(sum)
+        # print(output)
+    end = time.time()
+    print("高速化あり")
+    print("時間", end-start)
+    print("誤り率", sum / (N * kaisu))

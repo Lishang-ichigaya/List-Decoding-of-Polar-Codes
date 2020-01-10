@@ -18,7 +18,7 @@ from CRC import CRC_Detector
 
 if __name__ == '__main__':
     k = 256
-    r = 0  # CRCの長さを変更する場合はCRC.pyも書き換える
+    r = 3  # CRCの長さを変更する場合はCRC.pyも書き換える
     K = k + r
     N = 512
     L = 4
@@ -26,15 +26,16 @@ if __name__ == '__main__':
     chaneltype = "BSC"
     P = 0.06
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
+    result_file_name = "samui.txt"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
 
-    kaisu = 5500
+    kaisu = 10
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
         for P in [0.06]:
-            for L in [8, 16]:
-                with open("SCLのテスト1.txt", mode='a', encoding='utf-8') as f:
+            for L in [4]:
+                with open(result_file_name, mode='a', encoding='utf-8') as f:
                     f.write("-----------------------L="+str(L)+"----------------------------\n")
-                for N in [32, 64, 128, 256, 512]:
+                for N in [128]:
                     k = N//2
                     K = k + r
                     eroorcount0 = 0
@@ -90,7 +91,7 @@ if __name__ == '__main__':
                     end = time.time()
 
                     if True:
-                        with open("SCLのテスト1.txt", mode='a', encoding='utf-8') as f:
+                        with open(result_file_name, mode='a', encoding='utf-8') as f:
                             f.write("K="+str(K)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P)+"\n")
                             # f.write("送信メッセージ数: " + str(K*kaisu)+", " + decoder0name + "復号誤り: "
                             #       + str(eroorcount0)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
