@@ -18,10 +18,10 @@ from CRC import CRC_Detector
 
 
 if __name__ == '__main__':
-    k = 128
+    k = 16
     r = 2  # CRCの長さ
     K = k + r
-    N = 256
+    N = 32
     L = 4
     M = int(np.log2(N))
     chaneltype = "BSC"
@@ -121,11 +121,15 @@ if __name__ == '__main__':
         message.MakeMessage()
         print("メッセージ:\t\t", message.message)
 
-        crcenc = CRC_Encoder(message.message,r)
-        crcenc.Encode()
-        print("CRC付与:\t\t", crcenc.codeword)
+        crcenc0 = CRC_Encoder(message.message[:8], 1)
+        crcenc0.Encode()
+        crcenc1 = CRC_Encoder(message.message[8:], 1)
+        crcenc1.Encode()
 
-        encoder0 = Encoder(K, N, crcenc.codeword, path)
+        crccodeword = np.concatenate([crcenc0.codeword, crcenc1.codeword])
+        print("CRC付与:\t\t", crccodeword)
+
+        encoder0 = Encoder(K, N, crccodeword, path)
         encoder0.MakeCodeworde()
         print("符号語:\t\t\t", encoder0.codeword)
 
@@ -141,15 +145,17 @@ if __name__ == '__main__':
         # hat_message0.message = decoder0.hat_message
         # print("  SCLメッセージ推定値:\t", hat_message1.message)
 
-        decoder1 = ListDecoder_CRC(K, N, L, r, output, chaneltype, path, False)
+        decoder1 = ListDecoder_TwoCRC(K, N, L, r, output, chaneltype, path, False)
         decoder1.DecodeMessage(P)
         hat_message1 = Message(K)
-        hat_message1.message = decoder1.hat_message[:k]
-        print("CASCLメッセージ推定値:\t", hat_message1.message)
+        hat_message1.message = decoder1.hat_message
+        hat_message = np.delete(hat_message1.message, [8,17], 0)
+        print("CASCLメッセージ推定値:\t", hat_message)
+
 
         # print("本当のメッセージ:\t", message.message)
 
         # error0 = np.bitwise_xor(message.message, hat_message0.message)
         # print("  SCL誤り数:", np.count_nonzero(error0))
-        error1 = np.bitwise_xor(message.message, hat_message1.message)
+        error1 = np.bitwise_xor(message.message, hat_message)
         print("CASCL誤り数:", np.count_nonzero(error1))
