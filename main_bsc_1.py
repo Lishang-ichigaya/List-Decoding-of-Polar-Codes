@@ -17,10 +17,10 @@ from CRC import CRC_Detector
 
 
 if __name__ == '__main__':
-    k = 256
-    r = 3  # CRCの長さを変更する場合はCRC.pyも書き換える
+    k = 128
+    r = 0  # CRCの長さを変更する場合はCRC.pyも書き換える
     K = k + r
-    N = 512
+    N = 256
     L = 4
     M = int(np.log2(N))
     chaneltype = "BSC"
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     result_file_name = "samui.txt"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
 
-    kaisu = 10
+    kaisu = 100
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
         for P in [0.06]:
             for L in [4]:
