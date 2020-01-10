@@ -7,18 +7,19 @@ from tkinter import messagebox
 from message import Message
 from Encoder import Encoder
 from chanel import BSC
-from Decoder import DecoderW
-from Decoder import DecoderLR
-from Decoder import ListDecoder
+#from Decoder import DecoderW
+#from Decoder import DecoderLR
+#from Decoder import ListDecoder
 from Decoder import ListDecoder_F
 from Decoder import ListDecoder_CRC
+from Decoder import ListDecoder_TwoCRC
 from CRC import CRC_Encoder
 from CRC import CRC_Detector
 
 
 if __name__ == '__main__':
     k = 128
-    r = 0  # CRCの長さを変更する場合はCRC.pyも書き換える
+    r = 2  # CRCの長さ
     K = k + r
     N = 256
     L = 4
@@ -26,16 +27,16 @@ if __name__ == '__main__':
     chaneltype = "BSC"
     P = 0.06
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
-    result_file_name = "samui.txt"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
 
-    kaisu = 1000
+    kaisu = 10
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
+        result_file_name = "samui.txt"
         for P in [0.06]:
             for L in [4]:
                 with open(result_file_name, mode='a', encoding='utf-8') as f:
                     f.write("-----------------------L="+str(L)+"----------------------------\n")
-                for N in [128]:
+                for N in [512]:
                     k = N//2
                     K = k + r
                     eroorcount0 = 0
@@ -120,7 +121,7 @@ if __name__ == '__main__':
         message.MakeMessage()
         print("メッセージ:\t\t", message.message)
 
-        crcenc = CRC_Encoder(message.message)
+        crcenc = CRC_Encoder(message.message,r)
         crcenc.Encode()
         print("CRC付与:\t\t", crcenc.codeword)
 
@@ -140,7 +141,7 @@ if __name__ == '__main__':
         # hat_message0.message = decoder0.hat_message
         # print("  SCLメッセージ推定値:\t", hat_message1.message)
 
-        decoder1 = ListDecoder_CRC(K, N, L, output, chaneltype, path, False)
+        decoder1 = ListDecoder_CRC(K, N, L, r, output, chaneltype, path, False)
         decoder1.DecodeMessage(P)
         hat_message1 = Message(K)
         hat_message1.message = decoder1.hat_message[:k]

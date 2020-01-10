@@ -158,8 +158,9 @@ class ListDecoder_F:
 
 
 class ListDecoder_CRC(ListDecoder_F):
-    def __init__(self, K, N, L, chaneloutput, chaneltype, path, checker=True):
+    def __init__(self, K, N, L, r, chaneloutput, chaneltype, path, checker=True):
         super().__init__(K, N, L, chaneloutput, chaneltype, path, checker)
+        self.CRClen = r
 
     def DecodeMessage(self, P):
         """
@@ -182,7 +183,7 @@ class ListDecoder_CRC(ListDecoder_F):
                     j += 1
                     if j > self.K-1:
                         j = self.K-1
-            crcdec = CRC_Detector(message)
+            crcdec = CRC_Detector(message, self.CRClen)
             if crcdec.IsNoError():
                 #CRCが一致した場合の操作
                 is_nocrc = False
@@ -203,7 +204,9 @@ class ListDecoder_CRC(ListDecoder_F):
                         j = self.K-1
             self.hat_message = message
 
-
+class ListDecoder_TwoCRC(ListDecoder_CRC):
+    def __init__(self, K, N, L, r, chaneloutput, chaneltype, path, checker=True):
+        super().__init__(self, K, N, L, r, chaneloutput, chaneltype, path, checker)
 
 class ListDecoder:
     def __init__(self, K, N, L, chaneloutput, chaneltype, path, checker=True):
