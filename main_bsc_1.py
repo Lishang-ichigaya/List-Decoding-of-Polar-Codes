@@ -29,7 +29,7 @@ if __name__ == '__main__':
     result_file_name = "samui.txt"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
 
-    kaisu = 100
+    kaisu = 1000
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
         for P in [0.06]:
             for L in [4]:
