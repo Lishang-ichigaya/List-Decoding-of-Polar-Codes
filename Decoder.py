@@ -4,6 +4,7 @@ from CaliculateLR import CalculateLR_BSC
 from Encoder import GetGeneratorMatrix
 from Encoder import GetInformationIndex
 import numpy as np
+np.set_printoptions(linewidth=200)
 from CaliculateW import CalculateW_BSC
 from CaliculateW import CalculateW_BSC_2
 from CaliculateW import CalculateW_BEC
@@ -200,6 +201,7 @@ class ListDecoder_TwoCRC(ListDecoder_CRC):
         """
         #estimatedcodeword = np.array([], dtype=np.uint8)
         informationindex = GetInformationIndex(self.K, self.path)
+        #print(informationindex)
         j = 0
         self.activePath[0] = True
         # アクティブなパスを示す配列の0番目だけ初期化
@@ -223,57 +225,62 @@ class ListDecoder_TwoCRC(ListDecoder_CRC):
                             tmp_W[2*l + 1] = CalculateW_BSC(P, self.N, self.chaneloutput, i, np.array(
                                 [1], dtype=np.uint8), self.hat_message_list[l], self.matrixP[l], 0)
                             tmp_matrixP[l] = self.matrixP[l]
-                            #print(i, j, l, tmp_list[2*l])
-                            #print(i, j, l, tmp_list[2*l+1])
-                            #print(tmp_W[2*l], ",", tmp_W[2*l+1])
-                            if j is 8:
+                            #if j==263:
+                            #   print(i, j, l, "\t\t",tmp_list[2*l])
+                            #   print(i, j, l, "\t\t",tmp_list[2*l+1])
+                            # print(tmp_W[2*l], ",", tmp_W[2*l+1])
+                            if j == 131:
                                 #前半のCRCの場合の処理
-                                tmp_crcdec0 = CRC_Detector(tmp_list[2*l][informationindex[:j]], self.CRClen//2)
-                                tmp_crcdec1 = CRC_Detector(tmp_list[2*l+1][informationindex[:j]], self.CRClen//2)
+                                tmp_crcdec0 = CRC_Detector(tmp_list[2*l][informationindex[:j+1]], self.CRClen//2)
+                                tmp_crcdec1 = CRC_Detector(tmp_list[2*l+1][informationindex[:j+1]], self.CRClen//2)
                                 if tmp_crcdec0.IsNoError():
+                                    #print("\t\t\t",tmp_list[2*l][informationindex[:j+1]])
                                     self.hat_message_list[0] = tmp_list[2*l]
-                                    self.matrixP = [Decimal("-1")] * self.L
+                                    self.matrixP = np.full((self.L, self.N,  int(np.log2(self.N))+1, 2), Decimal("-1"))
                                     self.matrixP[0] = tmp_matrixP[l]
                                     self.activePath = [False] * self.L
                                     self.activePath[0] = True
-                                    tmp_W = [Decimal("-1")] * (2*self.L)
+                                    tmp_W = np.full((2 * self.L), Decimal("-1"))
                                     tmp_activePath = [False] * (2* self.L)
                                     amita = True
                                     j += 1
                                     break
                                 elif tmp_crcdec1.IsNoError():
+                                    #print("\t\t\t",tmp_list[2*l+1][informationindex[:j+1]])
                                     self.hat_message_list[0] = tmp_list[2*l+1]
-                                    self.matrixP = [Decimal("-1")] * self.L
+                                    self.matrixP = np.full((self.L, self.N,  int(np.log2(self.N))+1, 2), Decimal("-1"))
                                     self.matrixP[0] = tmp_matrixP[l]
                                     self.activePath= [False] * self.L
                                     self.activePath[0] = True
-                                    tmp_W = [Decimal("-1")] * (2*self.L)
+                                    tmp_W = np.full((2 * self.L), Decimal("-1"))
                                     tmp_activePath = [False] * (2* self.L)
                                     amita = True
                                     j += 1
                                     break
-                            if j is 17:
+                            if j == 263:
                                 #後半のCRCの場合の処理
-                                tmp_crcdec0 = CRC_Detector(tmp_list[2*l][9:], self.CRClen//2)
-                                tmp_crcdec1 = CRC_Detector(tmp_list[2*l+1][9:], self.CRClen//2)
+                                tmp_crcdec0 = CRC_Detector(tmp_list[2*l][informationindex[132:j+1]], self.CRClen//2)
+                                tmp_crcdec1 = CRC_Detector(tmp_list[2*l+1][informationindex[132:j+1]], self.CRClen//2)
                                 if tmp_crcdec0.IsNoError():
+                                    #print("\t\t\t\t\t\t\t      ",tmp_list[2*l][informationindex[132:j+1]])
                                     self.hat_message_list[0] = tmp_list[2*l]
-                                    self.matrixP = [Decimal("-1")] * self.L
+                                    self.matrixP = np.full((self.L, self.N,  int(np.log2(self.N))+1, 2), Decimal("-1"))
                                     self.matrixP[0] = tmp_matrixP[l]
                                     self.activePath= [False] * self.L
                                     self.activePath[0] = True
-                                    tmp_W = [Decimal("-1")] * (2*self.L)
+                                    tmp_W = np.full((2 * self.L), Decimal("-1"))
                                     tmp_activePath = [False] * (2* self.L)
                                     #amita = True
                                     j += 1
                                     break
                                 elif tmp_crcdec1.IsNoError():
+                                    #print("\t\t\t\t\t\t\t      ",tmp_list[2*l+1][informationindex[19:j+1]])
                                     self.hat_message_list[0] = tmp_list[2*l+1]
-                                    self.matrixP = [Decimal("-1")] * self.L
+                                    self.matrixP = np.full((self.L, self.N,  int(np.log2(self.N))+1, 2), Decimal("-1"))
                                     self.matrixP[0] = tmp_matrixP[l]
                                     self.activePath= [False] * self.L
                                     self.activePath[0] = True
-                                    tmp_W = [Decimal("-1")] * (2*self.L)
+                                    tmp_W = np.full((2 * self.L), Decimal("-1"))
                                     tmp_activePath = [False] * (2* self.L)
                                     #amita = True
                                     j += 1
@@ -590,21 +597,20 @@ class DecoderLR:
 
 if __name__ == "__main__":
     if True:
-        K = 16
-        N = 32
-        L = 16
-        path = "./sort_I/sort_I_5_0.11_20.dat"
-        chaneloutput = np.array([1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0,
-                                 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1])
+        K = 36
+        N = 64
+        L = 4
+        path = "./sort_I/sort_I_6_0.11_20.dat"
+        chaneloutput = np.array([0,0,0,1,1,0,0,0,1,1,0,1,0,1,0,0,0,0,0,1,0,1,1,1,0,0,1,0,0,1,0,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,1,0,1,0,1,1])
 
-        decoder0 = ListDecoder(K, N, L, chaneloutput, "BSC", path, False)
-        decoder0.DecodeMessage(0.11)
+        decoder0 = ListDecoder_F(K, N, L, chaneloutput, "BSC", path, False)
+        decoder0.DecodeMessage(0.06)
         print("SCL: ", decoder0.hat_message)
 
-        decoder1 = DecoderW(K, N, chaneloutput, "BSC", path, False)
-        decoder1.DecodeMessage(0.11)
-        print(" SC: ", decoder1.hat_message)
-        print("Ans:  [0 0 1 1 0 0 0 0 1 1 1 0 1 0 0 1]")
+        # decoder1 = DecoderW(K, N, chaneloutput, "BSC", path, False)
+        # decoder1.DecodeMessage(0.06)
+        # print(" SC: ", decoder1.hat_message)
+        # print("Ans:  [0 0 1 1 0 0 0 0 1 1 1 0 1 0 0 1]")
     if False:
         K = 8
         N = 16

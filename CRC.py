@@ -3,13 +3,11 @@ import numpy as np
 
 class CRC:
     def __init__(self,  message, CRClen):
-        if CRClen is 2:
-            self.GeneratorPolynomial = np.array([1, 0, 1], dtype=np.uint8)
-        elif CRClen is 4:
+        if CRClen == 4:
             self.GeneratorPolynomial = np.array([1, 0, 0, 1, 1], dtype=np.uint8)
-        elif CRClen is 8:
+        elif CRClen == 8:
             self.GeneratorPolynomial = np.array([1, 1, 1, 0, 1, 0, 1, 0, 1], dtype=np.uint8)
-        elif CRClen is 16:
+        elif CRClen == 16:
             self.GeneratorPolynomial = np.array([1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1], dtype=np.uint8)
         else:
             self.GeneratorPolynomial = np.array([1, 1], dtype=np.uint8)
@@ -91,19 +89,19 @@ class CRC_Detector(CRC):
 
 
 if __name__ == "__main__":
-    message = np.array([1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1,
-                        1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1], dtype=np.uint8)
+    message = np.array([0,0,1,0,1,1,0,1,0,0,1,0,1,1,1,0,1,1,1], dtype=np.uint8)
+    r = 2
     print("msg:", message)
-    crcenc = CRC_Encoder(message)
+    crcenc = CRC_Encoder(message, r)
     crcenc.Encode()
     codeword = crcenc.codeword
     print("enc:", codeword)
 
     output = codeword
-    #output[2] += 1
+    output[2] += 1
     #output[7] += 1
     output %= 2
-    crcdec = CRC_Detector(output)
+    crcdec = CRC_Detector(output, r)
     crcdec.Detecte()
     print("dec:", crcdec.remainder)
     print("msg:", crcdec.GetMessage())
