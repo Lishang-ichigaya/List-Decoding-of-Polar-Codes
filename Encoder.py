@@ -83,6 +83,7 @@ def GetInformationIndex(K, path):
     K:メッセージの長さ
     """
     informationindex = np.loadtxt(path, dtype=np.uint16)
+    #print(informationindex)
     # N = 65536 までは耐えられるようにunit16を使う
     # unit8 だとN=256までしか使えない
     informationindex = np.flip(informationindex)

@@ -7,6 +7,7 @@ from tkinter import messagebox
 
 from message import Message
 from Encoder import Encoder
+from Encoder import GetInformationIndex
 from chanel import BSC
 #from Decoder import DecoderW
 #from Decoder import DecoderLR
@@ -19,16 +20,22 @@ from CRC import CRC_Detector
 
 
 if __name__ == '__main__':
-    k = 256
+    k = 32
     r = 8  # CRCの長さ
     K = k + r
-    N = 512
+    N = 64
     L = 4
     M = int(np.log2(N))
     chaneltype = "BSC"
     P = 0.06
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
+
+    if len(sys.argv) == 2 and sys.argv[1] == "test":
+        a = informationindex = np.loadtxt(path, dtype=np.uint16)
+        a = np.flip(a)
+        a = a[k:k+r]
+        print(a)
 
     kaisu = 10000
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
@@ -130,12 +137,12 @@ if __name__ == '__main__':
         message.MakeMessage()
         print("メッセージ:\t\t", message.message)
 
-        crcenc0 = CRC_Encoder(message.message[:k//2], r//2)
+        crcenc0 = CRC_Encoder(message.message, r)
         crcenc0.Encode()
-        crcenc1 = CRC_Encoder(message.message[k//2:], r//2)
-        crcenc1.Encode()
+        infbit = message.message
+        crcbit = crcenc0.CRC
 
-        crccodeword = np.concatenate([crcenc0.codeword, crcenc1.codeword])
+        crccodeword = np.concatenate([infbit, crcbit])
         print("CRC付与:\t\t", crccodeword)
 
         encoder0 = Encoder(K, N, crccodeword, path)
@@ -154,12 +161,12 @@ if __name__ == '__main__':
         # hat_message0.message = decoder0.hat_message
         # print("  SCLメッセージ推定値:\t", hat_message1.message)
 
-        decoder1 = ListDecoder_TwoCRC(K, N, L, r, output, chaneltype, path, False)
+        decoder1 = ListDecoder_CRC(K, N, L, r, output, chaneltype, path, False)
         decoder1.DecodeMessage(P)
         hat_message1 = Message(K)
         hat_message1.message = decoder1.hat_message
         print("CRC付与推定値\t\t", hat_message1.message)
-        hat_message = np.delete(hat_message1.message, [128,129,130,131,260,261,262,263], 0)
+        hat_message = hat_message1.message[:k]
         print("CASCLメッセージ推定値:\t", hat_message)
 
         # print("本当のメッセージ:\t", message.message)

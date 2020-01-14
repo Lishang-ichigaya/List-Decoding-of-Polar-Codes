@@ -161,6 +161,7 @@ class ListDecoder_CRC(ListDecoder_F):
         P: 誤り確率
         """
         self.DecodeOutput(P)
+        print("\t\t\t",self.hat_message_prime)
 
         informationindex = np.sort(GetInformationIndex(self.K, self.path)[:self.K])
         is_nocrc = True
@@ -182,14 +183,7 @@ class ListDecoder_CRC(ListDecoder_F):
 
         if is_nocrc:
             # CRCが一つも一致しない場合の操作
-            for i in range(self.N):
-                if i == informationindex[j]:
-                    message_j = likelypass[i]
-                    message = np.insert(message, j, message_j)
-                    j += 1
-                    if j > self.K-1:
-                        j = self.K-1
-            self.hat_message = message
+            self.hat_message = likelypass[informationindex]
 
 
 class ListDecoder_TwoCRC(ListDecoder_CRC):
