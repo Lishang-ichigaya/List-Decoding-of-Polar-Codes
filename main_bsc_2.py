@@ -28,10 +28,10 @@ if __name__ == '__main__':
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
 
-    kaisu = 2
+    kaisu = 10000
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
         result_file_name = "A_OneCRC-SCLの結果.txt"
-        for i in range(2):
+        for i in range(10):
             for P in [0.06]:
                 for L in [4]:
                     with open(result_file_name, mode='a', encoding='utf-8') as f:
