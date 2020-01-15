@@ -186,6 +186,35 @@ class ListDecoder_CRC(ListDecoder_F):
             # CRCが一つも一致しない場合の操作
             self.hat_message = likelypass[informationindex]
 
+class ListDecoder_TwoCRC_test(ListDecoder_CRC):
+    def DecodeMessage(self, P):
+        """
+        メッセージを符号語から復元
+        P: 誤り確率
+        """
+        self.DecodeOutput(P)
+        #print("\t\t\t",self.hat_message_prime)
+
+        informationindex = np.sort(GetInformationIndex(self.K, self.path)[:self.K])
+        is_nocrc = True
+        likelypass = self.hat_message_list[0]
+
+        for l in range(self.L):
+            message = self.hat_message_list[l][informationindex]
+            # メッセージの取り出し
+            messagehead = message[:self.K]
+            messagetail = message[self.K:]
+            crchead = CRC_Detector(messagehead, self.CRClen//2)
+            crctail = CRC_Detector(messagetail, self.CRClen//2)
+            if crchead.IsNoError():
+                if crctail.IsNoError():
+                    # CRCが一致した場合の操作
+                    is_nocrc = False
+                    self.hat_message = message
+                    break
+        if is_nocrc:
+            # CRCが一つも一致しない場合の操作
+            self.hat_message = likelypass[informationindex]
 
 class ListDecoder_CRCinterleaved(ListDecoder_CRC):
     def DecodeMessage(self, P):

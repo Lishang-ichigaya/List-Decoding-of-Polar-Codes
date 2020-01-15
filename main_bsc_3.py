@@ -14,6 +14,7 @@ from chanel import BSC
 from Decoder import ListDecoder_F
 from Decoder import ListDecoder_CRC
 from Decoder import ListDecoder_TwoCRC
+from Decoder import ListDecoder_TwoCRC_test
 from CRC import CRC_Encoder
 from CRC import CRC_Detector
 
@@ -77,7 +78,7 @@ if __name__ == '__main__':
 
                             decoder1name = "TwoCRC-SCL"
                             # start1 = time.time()
-                            decoder1 = ListDecoder_TwoCRC(K, N, L, r, output, chaneltype, path, False)
+                            decoder1 = ListDecoder_TwoCRC_test(K, N, L, r, output, chaneltype, path, False)
                             decoder1.DecodeMessage(P)
 
                             hat_message = np.delete(decoder1.hat_message, np.s_[k//2:(k+r)//2], 0)
