@@ -19,10 +19,10 @@ from CRC import CRC_Detector
 
 
 if __name__ == '__main__':
-    k = 256
+    k = 32
     r = 8  # CRCの長さ
     K = k + r
-    N = 512
+    N = 64
     L = 4
     M = int(np.log2(N))
     chaneltype = "BSC"
@@ -30,15 +30,15 @@ if __name__ == '__main__':
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
 
-    kaisu = 10000
+    kaisu = 100
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
-        result_file_name = "Ab_TwoCRC-CSLの結果.txt"
-        for i in range(10):
+        result_file_name = "Abfas.txt"
+        for i in range(1):
             for P in [0.06]:
                 for L in [4]:
                     with open(result_file_name, mode='a', encoding='utf-8') as f:
                         f.write("-----------------------L="+str(L)+"----------------------------\n")
-                    for N in [512]:
+                    for N in [256]:
                         k = N//2
                         K = k + r
                         eroorcount0 = 0
@@ -80,7 +80,8 @@ if __name__ == '__main__':
                             decoder1 = ListDecoder_TwoCRC(K, N, L, r, output, chaneltype, path, False)
                             decoder1.DecodeMessage(P)
 
-                            hat_message = np.delete(decoder1.hat_message, [128,129,130,131,260,261,262,263], 0)
+                            hat_message = np.delete(decoder1.hat_message, np.s_[k//2:(k+r)//2], 0)
+                            hat_message = np.delete(hat_message, np.s_[k:], 0)
 
                             # hat_message1 = Message(k)
                             # hat_message1.message = decoder1.hat_message
@@ -159,7 +160,8 @@ if __name__ == '__main__':
         hat_message1 = Message(K)
         hat_message1.message = decoder1.hat_message
         print("CRC付与推定値\t\t", hat_message1.message)
-        hat_message = np.delete(hat_message1.message, [128,129,130,131,260,261,262,263], 0)
+        hat_message = np.delete(hat_message1.message, np.s_[k//2:(k+r)//2], 0)
+        hat_message = np.delete(hat_message, np.s_[k:], 0)
         print("CASCLメッセージ推定値:\t", hat_message)
 
         # print("本当のメッセージ:\t", message.message)

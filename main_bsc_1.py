@@ -7,23 +7,24 @@ from tkinter import messagebox
 
 from message import Message
 from Encoder import Encoder
-from Encoder import GetInformationIndex
+from Encoder import InterleavedEncoder
 from chanel import BSC
 #from Decoder import DecoderW
 #from Decoder import DecoderLR
 #from Decoder import ListDecoder
 from Decoder import ListDecoder_F
 from Decoder import ListDecoder_CRC
+from Decoder import ListDecoder_CRCinterleaved
 from Decoder import ListDecoder_TwoCRC
 from CRC import CRC_Encoder
 from CRC import CRC_Detector
 
 
 if __name__ == '__main__':
-    k = 32
+    k = 64
     r = 8  # CRCの長さ
     K = k + r
-    N = 64
+    N = 128
     L = 4
     M = int(np.log2(N))
     chaneltype = "BSC"
@@ -37,15 +38,15 @@ if __name__ == '__main__':
         a = a[k:k+r]
         print(a)
 
-    kaisu = 10000
+    kaisu = 12000
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
-        result_file_name = "A_TwoCRC-CSLの結果.txt"
-        for i in range(10):
-            for P in [0.06]:
-                for L in [4]:
-                    with open(result_file_name, mode='a', encoding='utf-8') as f:
-                        f.write("-----------------------L="+str(L)+"----------------------------\n")
-                    for N in [512]:
+        result_file_name = "A_InterleavedCRC-CSLの結果.txt"
+        for i in range(1):
+            for P in [0.015, 0.03, 0.06, 0.08]:
+                with open(result_file_name, mode='a', encoding='utf-8') as f:
+                    f.write("-----------------------P="+str(P)+"----------------------------\n")
+                for L in [2,4,8]:
+                    for N in [256]:
                         k = N//2
                         K = k + r
                         eroorcount0 = 0
@@ -59,14 +60,14 @@ if __name__ == '__main__':
                             message = Message(k)
                             message.MakeMessage()
 
-                            crcenc0 = CRC_Encoder(message.message[:k//2], r//2)
-                            crcenc0.Encode()
-                            crcenc1 = CRC_Encoder(message.message[k//2:], r//2)
-                            crcenc1.Encode()
+                            crcenc = CRC_Encoder(message.message, r)
+                            crcenc.Encode()
+                            infbit = message.message
+                            crcbit = crcenc.CRC
 
-                            crccodeword = np.concatenate([crcenc0.codeword, crcenc1.codeword])
+                            crccodeword = np.concatenate([infbit, crcbit])
 
-                            encoder0 = Encoder(K, N, crccodeword, path, False)
+                            encoder0 = InterleavedEncoder(k, N, r, infbit, crcbit, path, False)
                             encoder0.MakeCodeworde()
 
                             bsc = BSC(P)
@@ -82,19 +83,17 @@ if __name__ == '__main__':
                             # hat_message0.message = decoder0.hat_message
                             # end0 = time.time()
 
-                            decoder1name = "TwoCRC-SCL"
+                            decoder1name = "InterleavedCRC-SCL"
                             # start1 = time.time()
-                            decoder1 = ListDecoder_TwoCRC(K, N, L, r, output, chaneltype, path, False)
+                            decoder1 = ListDecoder_CRCinterleaved(K, N, L, r, output, chaneltype, path, False)
                             decoder1.DecodeMessage(P)
-
-                            hat_message = np.delete(decoder1.hat_message, [128,129,130,131,260,261,262,263], 0)
 
                             # hat_message1 = Message(k)
                             # hat_message1.message = decoder1.hat_message
                             # end1 = time.time()
 
                             # error0 = np.bitwise_xor(message.message, hat_message0.message)
-                            error1 = np.bitwise_xor(message.message, hat_message)
+                            error1 = np.bitwise_xor(message.message, decoder1.hat_message[:k])
 
                             # eroorcount0 += np.count_nonzero(error0)
                             eroorcount1 += np.count_nonzero(error1)
@@ -109,25 +108,25 @@ if __name__ == '__main__':
 
                         if True:
                             with open(result_file_name, mode='a', encoding='utf-8') as f:
-                                f.write("K="+str(K)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P)+"\n")
+                                f.write("K="+str(k)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P)+"\n")
                                 # f.write("送信メッセージ数: " + str(K*kaisu)+", " + decoder0name + "復号誤り: "
                                 #       + str(eroorcount0)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
-                                f.write("送信メッセージ数: " + str(K*kaisu)+", " + decoder1name + "復号誤り: " + str(eroorcount1)+"\n")
+                                f.write("送信メッセージ数: " + str(k*kaisu)+", " + decoder1name + "復号誤り: " + str(eroorcount1)+"\n")
                                 #f.write("FER_" + decoder0name + ": " + str(frameerrorcout0/kaisu)+"\n")
                                 f.write("FER_" + decoder1name + ": " + str(frameerrorcout1/kaisu)+"\n")
-                                #f.write("BER_" + decoder0name + ": " + str(eroorcount0/(K*kaisu))+"\n")
-                                f.write("BER_" + decoder1name + ": " + str(eroorcount1/(K*kaisu))+"\n")
+                                #f.write("BER_" + decoder0name + ": " + str(eroorcount0/(k*kaisu))+"\n")
+                                f.write("BER_" + decoder1name + ": " + str(eroorcount1/(k*kaisu))+"\n")
                                 f.write("実行時間: " + str(end-start)+"\n")
 
                         if True:
-                            print("K="+str(K)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P))
+                            print("K="+str(k)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P))
                             # print("送信メッセージ数: " + str(K*kaisu)+", " + decoder0name + "復号誤り: " +
                             #      str(eroorcount0)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
-                            print("送信メッセージ数: " + str(K*kaisu)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
+                            print("送信メッセージ数: " + str(k*kaisu)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
                             #print("FER_" + decoder0name + ": " + str(frameerrorcout0/kaisu))
                             print("FER_" + decoder1name + ": " + str(frameerrorcout1/kaisu))
-                            #print("BER_" + decoder0name + ": " + str(eroorcount0/(K*kaisu)))
-                            print("BER_" + decoder1name + ": " + str(eroorcount1/(K*kaisu)))
+                            #print("BER_" + decoder0name + ": " + str(eroorcount0/(k*kaisu)))
+                            print("BER_" + decoder1name + ": " + str(eroorcount1/(k*kaisu)))
                             print("実行時間: " + str(end-start))
 
     if len(sys.argv) == 1:
@@ -145,7 +144,9 @@ if __name__ == '__main__':
         crccodeword = np.concatenate([infbit, crcbit])
         print("CRC付与:\t\t", crccodeword)
 
-        encoder0 = Encoder(K, N, crccodeword, path)
+        #infbit = np.full([k], 1, dtype=np.uint8)
+        #crcbit = np.array([2,3,4,5,6,7,8,9])
+        encoder0 = InterleavedEncoder(k, N, r, infbit, crcbit, path)
         encoder0.MakeCodeworde()
         print("符号語:\t\t\t", encoder0.codeword)
 
@@ -161,7 +162,7 @@ if __name__ == '__main__':
         # hat_message0.message = decoder0.hat_message
         # print("  SCLメッセージ推定値:\t", hat_message1.message)
 
-        decoder1 = ListDecoder_CRC(K, N, L, r, output, chaneltype, path, False)
+        decoder1 = ListDecoder_CRCinterleaved(K, N, L, r, output, chaneltype, path, False)
         decoder1.DecodeMessage(P)
         hat_message1 = Message(K)
         hat_message1.message = decoder1.hat_message

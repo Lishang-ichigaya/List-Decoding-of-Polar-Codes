@@ -20,23 +20,35 @@ class Encoder:
         self.checker = checker
 
     def MakeCodeworde(self):
-        j = 0
         informationindex = GetInformationIndex(self.K, self.path)
-        for i in range(self.N):
-            if i == informationindex[j]:
-                self.message_prime[i] = self.message[j]
-                j += 1
-                if j > self.K-1:  # jが範囲を超えないように調整
-                    j = self.K-1
-            else:
-                self.message_prime[i] = 0
+        self.message_prime = np.zeros([self.N], dtype=np.uint8)
+        self.message_prime[informationindex] = self.message
         if self.checker == True:
             print("メッセージもどき： \t", self.message_prime)
         self.codeword = np.dot(self.message_prime, GetGeneratorMatrix(self.N)) % 2
         self.codeword = self.codeword.A1
-
     def GetMessagePrime(self):
         return self.message_prime
+
+
+class InterleavedEncoder(Encoder):
+    def __init__(self, k, N, r, message, parity, path, checker=True):
+        super().__init__(k, N, message, path, checker)
+        #self.K = k + r
+        #self.message = np.concatenate([message, parity])
+        self.r = r              #CRC等の長さ
+        self.parity = parity    #誤り検出や訂正を行うビット
+
+    def MakeCodeworde(self):
+        informationindex = GetInformationIndex(self.K, self.path)
+        paritybitindex = GetParitybitIndex(self.K, self.r, self.path)
+        self.message_prime = np.zeros([self.N], dtype=np.uint8)
+        self.message_prime[informationindex] = self.message
+        self.message_prime[paritybitindex] = self.parity
+        if self.checker == True:
+            print("メッセージもどき： \t", self.message_prime)
+        self.codeword = np.dot(self.message_prime, GetGeneratorMatrix(self.N)) % 2
+        self.codeword = self.codeword.A1
 
 def GetGeneratorMatrix(N):
     """
@@ -89,6 +101,16 @@ def GetInformationIndex(K, path):
     informationindex = np.flip(informationindex)
     # 相互情報量の小さい順に、インデックスを並べ替えたものを外部で用意しておく
     return np.sort(informationindex[:K])
+
+def GetParitybitIndex(K, r, path):
+    """
+    信頼性が比較的低いインデックス集合を得る。パリティビットに使用するかも
+    K:メッセージの長さ
+    r:パリティビットの長さ
+    """
+    paritybitindex = np.loadtxt(path, dtype=np.uint16)
+    paritybitindex = np.flip(paritybitindex)
+    return np.sort(paritybitindex[K:K+r])
 
 if __name__ == "__main__":
     K = 4

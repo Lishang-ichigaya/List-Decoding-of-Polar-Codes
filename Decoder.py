@@ -3,6 +3,7 @@ from CaliculateLR import CalculateLR_BEC
 from CaliculateLR import CalculateLR_BSC
 from Encoder import GetGeneratorMatrix
 from Encoder import GetInformationIndex
+from Encoder import GetParitybitIndex
 import numpy as np
 np.set_printoptions(linewidth=200)
 from CaliculateW import CalculateW_BSC
@@ -161,7 +162,7 @@ class ListDecoder_CRC(ListDecoder_F):
         P: 誤り確率
         """
         self.DecodeOutput(P)
-        print("\t\t\t",self.hat_message_prime)
+        #print("\t\t\t",self.hat_message_prime)
 
         informationindex = np.sort(GetInformationIndex(self.K, self.path)[:self.K])
         is_nocrc = True
@@ -184,6 +185,42 @@ class ListDecoder_CRC(ListDecoder_F):
         if is_nocrc:
             # CRCが一つも一致しない場合の操作
             self.hat_message = likelypass[informationindex]
+
+
+class ListDecoder_CRCinterleaved(ListDecoder_CRC):
+    def DecodeMessage(self, P):
+        """
+        メッセージを符号語から復元
+        P: 誤り確率
+        """
+        self.DecodeOutput(P)
+        #print("\t\t\t",self.hat_message_prime)
+
+        is_nocrc = True
+        likelypass = self.hat_message_list[0]
+
+        informationindex = GetInformationIndex(self.K-self.CRClen, self.path)
+        crcbitindex = GetParitybitIndex(self.K-self.CRClen, self.CRClen, self.path)
+        for l in range(self.L):
+            infbit = self.hat_message_list[l][informationindex]
+            crcbit = self.hat_message_list[l][crcbitindex]
+            message = np.concatenate([infbit, crcbit])
+            # メッセージの取り出し
+            crcdec = CRC_Detector(message, self.CRClen)
+            if crcdec.IsNoError():
+                # CRCが一致した場合の操作
+                is_nocrc = False
+                # print("\t\t",l,"-----------------------------------------------")
+                # print("\t\t\t",message)
+                self.hat_message = message
+                break
+            # print(l)
+
+        if is_nocrc:
+            # CRCが一つも一致しない場合の操作
+            infbit = likelypass[informationindex]
+            crcbit = likelypass[crcbitindex]
+            self.hat_message = np.concatenate([infbit, crcbit])
 
 
 class ListDecoder_TwoCRC(ListDecoder_CRC):
@@ -223,7 +260,7 @@ class ListDecoder_TwoCRC(ListDecoder_CRC):
                             #   print(i, j, l, "\t\t",tmp_list[2*l])
                             #   print(i, j, l, "\t\t",tmp_list[2*l+1])
                             # print(tmp_W[2*l], ",", tmp_W[2*l+1])
-                            if j == 131:
+                            if j == self.K //2 -1:
                                 #前半のCRCの場合の処理
                                 tmp_crcdec0 = CRC_Detector(tmp_list[2*l][informationindex[:j+1]], self.CRClen//2)
                                 tmp_crcdec1 = CRC_Detector(tmp_list[2*l+1][informationindex[:j+1]], self.CRClen//2)
@@ -251,10 +288,10 @@ class ListDecoder_TwoCRC(ListDecoder_CRC):
                                     amita = True
                                     j += 1
                                     break
-                            if j == 263:
+                            if j == self.K - 1 :
                                 #後半のCRCの場合の処理
-                                tmp_crcdec0 = CRC_Detector(tmp_list[2*l][informationindex[132:j+1]], self.CRClen//2)
-                                tmp_crcdec1 = CRC_Detector(tmp_list[2*l+1][informationindex[132:j+1]], self.CRClen//2)
+                                tmp_crcdec0 = CRC_Detector(tmp_list[2*l][informationindex[self.K//2:j+1]], self.CRClen//2)
+                                tmp_crcdec1 = CRC_Detector(tmp_list[2*l+1][informationindex[self.K//2:j+1]], self.CRClen//2)
                                 if tmp_crcdec0.IsNoError():
                                     #print("\t\t\t\t\t\t\t      ",tmp_list[2*l][informationindex[132:j+1]])
                                     self.hat_message_list[0] = tmp_list[2*l]
