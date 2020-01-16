@@ -2,7 +2,7 @@ from subprocess import check_call
 import numpy as np
 import sys
 import time
-from tkinter import messagebox
+#from tkinter import messagebox
 
 from message import Message
 from Encoder import Encoder
@@ -17,10 +17,10 @@ from CRC import CRC_Detector
 
 
 if __name__ == '__main__':
-    k = 256
-    r = 8  # CRCの長さを変更する場合はCRC.pyも書き換える
+    k = 128
+    r = 16  # CRCの長さを変更する場合はCRC.pyも書き換える
     K = k + r
-    N = 512
+    N = 256
     L = 4
     M = int(np.log2(N))
     chaneltype = "BSC"
@@ -28,14 +28,14 @@ if __name__ == '__main__':
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
 
-    kaisu = 12000
+    kaisu = 1000
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
-        result_file_name = "A_OneCRC-SCLの結果.txt"
+        result_file_name = "C_OneCRC-SCLの結果.txt"
         for i in range(1):
-            for P in [0.015, 0.03, 0.06, 0.08]:
+            for P in [0.06]:
                 with open(result_file_name, mode='a', encoding='utf-8') as f:
                     f.write("-----------------------P="+str(P)+"----------------------------\n")
-                for L in [2,4,8]:
+                for L in [4]:
                     for N in [256]:
                         k = N//2
                         K = k + r

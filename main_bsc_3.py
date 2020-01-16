@@ -20,10 +20,10 @@ from CRC import CRC_Detector
 
 
 if __name__ == '__main__':
-    k = 32
-    r = 8  # CRCの長さ
+    k = 128
+    r = 16  # CRCの長さ
     K = k + r
-    N = 64
+    N = 256
     L = 4
     M = int(np.log2(N))
     chaneltype = "BSC"
@@ -33,12 +33,12 @@ if __name__ == '__main__':
 
     kaisu = 100
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
-        result_file_name = "Abfas.txt"
+        result_file_name = "C_TwoCRC-SCLの結果.txt"
         for i in range(1):
             for P in [0.06]:
+                with open(result_file_name, mode='a', encoding='utf-8') as f:
+                    f.write("-----------------------P="+str(P)+"----------------------------\n")
                 for L in [4]:
-                    with open(result_file_name, mode='a', encoding='utf-8') as f:
-                        f.write("-----------------------L="+str(L)+"----------------------------\n")
                     for N in [256]:
                         k = N//2
                         K = k + r
@@ -104,25 +104,25 @@ if __name__ == '__main__':
 
                         if True:
                             with open(result_file_name, mode='a', encoding='utf-8') as f:
-                                f.write("K="+str(K)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P)+"\n")
+                                f.write("K="+str(k)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P)+"\n")
                                 # f.write("送信メッセージ数: " + str(K*kaisu)+", " + decoder0name + "復号誤り: "
                                 #       + str(eroorcount0)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
-                                f.write("送信メッセージ数: " + str(K*kaisu)+", " + decoder1name + "復号誤り: " + str(eroorcount1)+"\n")
+                                f.write("送信メッセージ数: " + str(k*kaisu)+", " + decoder1name + "復号誤り: " + str(eroorcount1)+"\n")
                                 #f.write("FER_" + decoder0name + ": " + str(frameerrorcout0/kaisu)+"\n")
                                 f.write("FER_" + decoder1name + ": " + str(frameerrorcout1/kaisu)+"\n")
                                 #f.write("BER_" + decoder0name + ": " + str(eroorcount0/(K*kaisu))+"\n")
-                                f.write("BER_" + decoder1name + ": " + str(eroorcount1/(K*kaisu))+"\n")
+                                f.write("BER_" + decoder1name + ": " + str(eroorcount1/(k*kaisu))+"\n")
                                 f.write("実行時間: " + str(end-start)+"\n")
 
                         if True:
-                            print("K="+str(K)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P))
+                            print("K="+str(k)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P))
                             # print("送信メッセージ数: " + str(K*kaisu)+", " + decoder0name + "復号誤り: " +
                             #      str(eroorcount0)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
                             print("送信メッセージ数: " + str(K*kaisu)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
                             #print("FER_" + decoder0name + ": " + str(frameerrorcout0/kaisu))
                             print("FER_" + decoder1name + ": " + str(frameerrorcout1/kaisu))
                             #print("BER_" + decoder0name + ": " + str(eroorcount0/(K*kaisu)))
-                            print("BER_" + decoder1name + ": " + str(eroorcount1/(K*kaisu)))
+                            print("BER_" + decoder1name + ": " + str(eroorcount1/(k*kaisu)))
                             print("実行時間: " + str(end-start))
 
     if len(sys.argv) == 1:
