@@ -29,10 +29,10 @@ if __name__ == '__main__':
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
 
-    kaisu = 10000
+    kaisu = 100
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
-        result_file_name = "C_OneCRC-SCLの結果.txt"
-        for i in range(16):
+        result_file_name = "D_OneCRC-SCLの結果.txt"
+        for i in range(1):
             for P in [0.06]:
                 with open(result_file_name, mode='a', encoding='utf-8') as f:
                     f.write("-----------------------P="+str(P)+"----------------------------\n")
@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
                             # decoder0name = "_SC"
                             # start0 = time.time()
-                            # decoder0 = DecoderW(K, N, output, chaneltype, path, False)
+                            # decoder0 = ListDecoder_TwoCRC(K, N, L, r, K//2, output, chaneltype, path, False)
                             # decoder0.DecodeMessage(P)
                             # hat_message0 = Message(K)
                             # hat_message0.message = decoder0.hat_message
@@ -89,6 +89,7 @@ if __name__ == '__main__':
                             print(i, "/", kaisu, "回目, ",
                                   #       0 if np.count_nonzero(error0) == 0 else 1,
                                   0 if np.count_nonzero(error1) == 0 else 1)
+                            
                             # print("FSCL:", "{0:.5f}".format(end0-start0), "SCL", "{0:.5f}".format(end1-start1))
                         end = time.time()
 

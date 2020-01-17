@@ -20,8 +20,8 @@ np.set_printoptions(linewidth=170)
 if __name__ == '__main__':
     k = 128
     r = 16  # CRCの長さ
-    threshold = 48 #CRCの区切り位置
-    threshold_m = threshold - r//2 #メッセージの区切り位置
+    threshold = 48  # CRCの区切り位置
+    threshold_m = threshold - r//2  # メッセージの区切り位置
     K = k + r
     N = 256
     L = 4
@@ -30,11 +30,12 @@ if __name__ == '__main__':
     P = 0.06
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
 
-    kaisu = 20
+    kaisu = 25000
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
-        result_file_name = "D_UnfairTwoCRC-SCLの結果.txt"
-        for i in range(1):
-            for P in [0.06]:
+        result_file_name = "D_UnfairTwoCRC-SCLの結果1.txt"
+        for threshold in [40, 48, 56]:
+            threshold_m = threshold - r//2
+            for P in [0.03, 0.06, 0.08]:
                 with open(result_file_name, mode='a', encoding='utf-8') as f:
                     f.write("-----------------------P="+str(P)+"----------------------------\n")
                 for L in [4]:
@@ -52,7 +53,6 @@ if __name__ == '__main__':
                             message = Message(k)
                             message.MakeMessage()
 
-                            
                             crcenc0 = CRC_Encoder(message.message[:threshold_m], r//2)
                             crcenc0.Encode()
                             crcenc1 = CRC_Encoder(message.message[threshold_m:], r//2)
@@ -63,7 +63,7 @@ if __name__ == '__main__':
                             encoder0 = Encoder(K, N, crccodeword, path, False)
                             encoder0.MakeCodeworde()
 
-                            bsc = BSC(0)
+                            bsc = BSC(P)
                             bsc.input = encoder0.codeword
                             bsc.Transmission()
                             output = bsc.output
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
                             decoder1name = "UnfairTwoCRC-SCL"
                             # start1 = time.time()
-                            decoder1 = ListDecoder_TwoCRC(K, N, L, r, threshold ,output, chaneltype, path, False)
+                            decoder1 = ListDecoder_TwoCRC(K, N, L, r, threshold, output, chaneltype, path, False)
                             decoder1.DecodeMessage(P)
 
                             hat_message = np.delete(decoder1.hat_message, np.s_[threshold-r//2:threshold], 0)
@@ -104,7 +104,8 @@ if __name__ == '__main__':
 
                         if True:
                             with open(result_file_name, mode='a', encoding='utf-8') as f:
-                                f.write("K="+str(k)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P)+"\n")
+                                f.write("K="+str(k)+", N="+str(N) + ", r=" + str(r) +
+                                  ", threshold="+str(threshold)+", L="+str(L)+", P="+str(P)+"\n")
                                 # f.write("送信メッセージ数: " + str(K*kaisu)+", " + decoder0name + "復号誤り: "
                                 #       + str(eroorcount0)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
                                 f.write("回数: "+str(kaisu)+", 送信メッセージ数: " + str(k*kaisu)+", " + decoder1name +
@@ -116,7 +117,8 @@ if __name__ == '__main__':
                                 f.write("実行時間: " + str(end-start)+"\n")
 
                         if True:
-                            print("K="+str(k)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P))
+                            print("K="+str(k)+", N="+str(N) + ", r=" + str(r) +
+                                  ", threshold="+str(threshold)+", L="+str(L)+", P="+str(P))
                             # print("送信メッセージ数: " + str(K*kaisu)+", " + decoder0name + "復号誤り: " +
                             #      str(eroorcount0)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
                             print("回数: "+str(kaisu)+", 送信メッセージ数: " + str(k*kaisu)+", " + decoder1name +
