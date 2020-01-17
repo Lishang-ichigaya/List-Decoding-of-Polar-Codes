@@ -14,7 +14,8 @@ from Encoder import GetParitybitIndex
 import numpy as np
 np.set_printoptions(linewidth=200)
 getcontext().prec = 28
-
+import copy
+from tkinter import messagebox
 
 class ListDecoder_F:
     def __init__(self, K, N, L, chaneloutput, chaneltype, path, checker=True):
@@ -236,19 +237,15 @@ class ListDecoder_TwoCRC(ListDecoder_CRC):
                             self.activePath[l] = True
                     # tmpのリストと尤度を元の配列へ代入
                     j += 1
+                    if j == self.threshold:
+                        self.CheckeSubblockCRC(0, j)
+                    elif j == self.K :
+                        self.CheckeSubblockCRC(self.threshold, j)
                 else:
                     # 凍結ビットの処理
                     for l in range(self.L):
                         if self.activePath[l] == True:
-                            self.hat_message_list[l] = np.insert(self.hat_message_list[l], i, np.array([0]))
-
-                if j == self.threshold:
-                    self.CheckeSubblockCRC(0, j)
-                    tmp_list = [np.array([], dtype=np.uint8)] * (2*self.L)
-                    tmp_W = np.full((2 * self.L), Decimal("-1"))
-                    tmp_activePath = [False] * (2 * self.L)
-                elif j == self.K :
-                    self.CheckeSubblockCRC(self.threshold, j)
+                            self.hat_message_list[l] = np.insert(self.hat_message_list[l], i, np.array([0]))                
         # ここまででメインの復号処理はおわり
 
         informationindex2 = np.sort(GetInformationIndex(self.K, self.path)[:self.K])
@@ -261,13 +258,18 @@ class ListDecoder_TwoCRC(ListDecoder_CRC):
         endindex: メッセージサブブロックの終了インデックス
         """
         informationindex = np.sort(GetInformationIndex(self.K, self.path))
-        tmp_list = self.hat_message_list
-        tmp_matrixP = self.matrixP
+        tmp_list = copy.deepcopy(self.hat_message_list)
+        #tmp_list = self.hat_message_list
+        tmp_matrixP = copy.deepcopy(self.matrixP)
+        #tmp_matrixP = self.matrixP
         count = 0
         for l in range(self.L):
             message = self.hat_message_list[l][informationindex[startindex:endindex]]
             crcdec = CRC_Detector(message, self.CRClen//2)
             if crcdec.IsNoError():
+                # if endindex ==self.threshold and  count >= 1:
+                #     messagebox.showwarning("あぶないかも？", str(count))
+                #     print(count)
                 self.hat_message_list[count] = tmp_list[l]
                 self.matrixP[count] = tmp_matrixP[l]
                 self.matrixP[count+1:] = Decimal("-1")
