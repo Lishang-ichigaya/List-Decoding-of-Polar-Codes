@@ -1,7 +1,6 @@
 import numpy as np
+from scipy.stats import norm
 
 if __name__ == "__main__":
-    tmp_activePath = [False] * (2 * 4)
-
-    tmp_activePath[:] = [True]* (2 * 4)
-    print(tmp_activePath)
+    a = norm.cdf(x=0, loc=1, scale=0.645)
+    print(a)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from subprocess import check_call
 import numpy as np
 import sys
@@ -28,10 +29,10 @@ if __name__ == '__main__':
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
 
-    kaisu = 1000
+    kaisu = 10000
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
         result_file_name = "C_OneCRC-SCLの結果.txt"
-        for i in range(1):
+        for i in range(16):
             for P in [0.06]:
                 with open(result_file_name, mode='a', encoding='utf-8') as f:
                     f.write("-----------------------P="+str(P)+"----------------------------\n")
@@ -86,8 +87,8 @@ if __name__ == '__main__':
                             # frameerrorcout0 += 0 if np.count_nonzero(error0) == 0 else 1
                             frameerrorcout1 += 0 if np.count_nonzero(error1) == 0 else 1
                             print(i, "/", kaisu, "回目, ",
-                                #       0 if np.count_nonzero(error0) == 0 else 1,
-                                0 if np.count_nonzero(error1) == 0 else 1)
+                                  #       0 if np.count_nonzero(error0) == 0 else 1,
+                                  0 if np.count_nonzero(error1) == 0 else 1)
                             # print("FSCL:", "{0:.5f}".format(end0-start0), "SCL", "{0:.5f}".format(end1-start1))
                         end = time.time()
 
@@ -96,7 +97,8 @@ if __name__ == '__main__':
                                 f.write("K="+str(k)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P)+"\n")
                                 # f.write("送信メッセージ数: " + str(K*kaisu)+", " + decoder0name + "復号誤り: "
                                 #       + str(eroorcount0)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
-                                f.write("送信メッセージ数: " + str(k*kaisu)+", " + decoder1name + "復号誤り: " + str(eroorcount1)+"\n")
+                                f.write("回数: "+str(kaisu)+", 送信メッセージ数: " + str(k*kaisu)+", " + decoder1name +
+                                        ", フレームエラー数" + str(frameerrorcout1)+", ビットエラー数: " + str(eroorcount1)+"\n")
                                 #f.write("FER_" + decoder0name + ": " + str(frameerrorcout0/kaisu)+"\n")
                                 f.write("FER_" + decoder1name + ": " + str(frameerrorcout1/kaisu)+"\n")
                                 #f.write("BER_" + decoder0name + ": " + str(eroorcount0/(k*kaisu))+"\n")
@@ -105,9 +107,10 @@ if __name__ == '__main__':
 
                         if True:
                             print("K="+str(k)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P))
-                            #print("送信メッセージ数: " + str(K*kaisu)+", " + decoder0name + "復号誤り: " +
+                            # print("送信メッセージ数: " + str(K*kaisu)+", " + decoder0name + "復号誤り: " +
                             #      str(eroorcount0)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
-                            print("送信メッセージ数: " + str(k*kaisu)+", " + decoder1name + "復号誤り: " + str(eroorcount1))
+                            print("回数: "+str(kaisu)+", 送信メッセージ数: " + str(k*kaisu)+", " + decoder1name +
+                                  ", フレームエラー数" + str(frameerrorcout1)+", ビットエラー数: " + str(eroorcount1))
                             #print("FER_" + decoder0name + ": " + str(frameerrorcout0/kaisu))
                             print("FER_" + decoder1name + ": " + str(frameerrorcout1/kaisu))
                             #print("BER_" + decoder0name + ": " + str(eroorcount0/(k*kaisu)))

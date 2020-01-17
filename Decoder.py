@@ -186,7 +186,7 @@ class ListDecoder_CRC(ListDecoder_F):
             self.hat_message = likelypass[informationindex]
 
 
-class ListDecoder_TwoCRC_test(ListDecoder_CRC):
+class __ListDecoder_TwoCRC_test(ListDecoder_CRC):
     def DecodeMessage(self, P):
         """
         メッセージを符号語から復元
@@ -217,7 +217,7 @@ class ListDecoder_TwoCRC_test(ListDecoder_CRC):
             self.hat_message = likelypass[informationindex]
 
 
-class ListDecoder_CRCinterleaved(ListDecoder_CRC):
+class __ListDecoder_CRCinterleaved(ListDecoder_CRC):
     def DecodeMessage(self, P):
         """
         メッセージを符号語から復元
@@ -254,6 +254,9 @@ class ListDecoder_CRCinterleaved(ListDecoder_CRC):
 
 
 class ListDecoder_TwoCRC(ListDecoder_CRC):
+    def __init__(self, K, N, L, r, threshold, chaneloutput, chaneltype, path, checker=True):
+        super().__init__(K, N, L, r, chaneloutput, chaneltype, path, checker=True)
+        self.threshold = threshold
 
     def DecodeMessage(self, P):
         """
@@ -305,12 +308,11 @@ class ListDecoder_TwoCRC(ListDecoder_CRC):
                     for l in range(self.L):
                         if self.activePath[l] == True:
                             self.hat_message_list[l] = np.insert(self.hat_message_list[l], i, np.array([0]))
-                # print(self.hat_message_list)
 
-                if j == self.K // 2:
+                if j == self.threshold:
                     self.CheckeSubblockCRC(0, j)
                 elif j == self.K :
-                    self.CheckeSubblockCRC(self.K//2, j)
+                    self.CheckeSubblockCRC(self.threshold, j)
         # ここまででメインの復号処理はおわり
 
         informationindex2 = np.sort(GetInformationIndex(self.K, self.path)[:self.K])
