@@ -20,19 +20,20 @@ np.set_printoptions(linewidth=100)
 
 
 k = 128
-r = 6  # CRCの長さ
-K = k + r
 N = 256
 L = 4
+r = 6  # CRCの長さ
+K = k + r
+threshold = K//2  # CRCの区切り位置
+threshold_m = threshold - r//2  # メッセージの区切り位置
 M = int(np.log2(N))
 chaneltype = "BSC"
 P = 0.06
 path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
-kaisu = 1000
-decodername = "OneSCL"
+kaisu = 200000
+decodername = "TwoUnfairCRC"
 is_record_log = True
-result_file_name = "ZA_OneCRC.txt"
-
+result_file_name = "ZA_TwofairCRC.txt"
 
 def OneProcess(i):
 
@@ -41,11 +42,14 @@ def OneProcess(i):
     message.MakeMessage()
 
     # CRC符号化
-    crcenc = CRC_Encoder(message.message, r)
-    crcenc.Encode()
+    crcenc0 = CRC_Encoder(message.message[:threshold_m], r//2)
+    crcenc0.Encode()
+    crcenc1 = CRC_Encoder(message.message[threshold_m:], r//2)
+    crcenc1.Encode()
+    crccodeword = np.concatenate([crcenc0.codeword, crcenc1.codeword])
 
     # ポーラ符号符号化
-    encoder0 = Encoder(K, N, crcenc.codeword, path, False)
+    encoder0 = Encoder(K, N, crccodeword, path, False)
     encoder0.MakeCodeworde()
 
     # 通信路
@@ -59,7 +63,8 @@ def OneProcess(i):
     decoder1.DecodeMessage(P)
 
     # メッセージの取り出し
-    hat_message = np.delete(decoder1.hat_message, np.s_[k:], 0)
+    hat_message = np.delete(decoder1.hat_message, np.s_[threshold-r//2:threshold], 0)
+    hat_message = np.delete(hat_message, np.s_[k:], 0)
 
     # フレームエラーの判定とビットエラー数の判定
     error1 = np.bitwise_xor(message.message, hat_message)
@@ -68,6 +73,7 @@ def OneProcess(i):
     print(i, "/", kaisu, "回目, ", frameerror)
     with open(result_file_name+".log", mode="a", encoding="utf-8") as log:
         log.write(str(i)+", "+str(frameerror)+","+str(biterror)+"\n")
+
     return [frameerror, biterror]
 
 
@@ -93,7 +99,7 @@ if __name__ == '__main__':
         biteroorcount = sum(biterror)
         if is_record_log:
             with open(result_file_name, mode='a', encoding='utf-8') as f:
-                f.write("K="+str(k)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P)+"\n")
+                f.write("K="+str(k)+", N="+str(N) + ", r=" + str(r) + ", threshold="+str(threshold)+", L="+str(L)+", P="+str(P)+"\n")
                 f.write("回数: "+str(kaisu)+", 送信メッセージ数: " + str(k*kaisu)+", " + decodername +
                         ", フレームエラー数" + str(frameerrorcout)+", ビットエラー数: " + str(biteroorcount)+"\n")  
                 f.write("FER_" + decodername + ": " + str(frameerrorcout/kaisu)+"\n")
@@ -101,12 +107,12 @@ if __name__ == '__main__':
                 f.write("実行時間: " + str(end-start)+"\n")
 
         print(decodername)
-        print("K="+str(k)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P))
+        print("K="+str(k)+", N="+str(N) + ", r=" + str(r) + ", threshold="+str(threshold)+", L="+str(L)+", P="+str(P))
         print("回数: "+str(kaisu)+", 送信メッセージ数: " + str(k*kaisu)+", " + ", フレームエラー数" + str(frameerrorcout)+", ビットエラー数: " + str(biteroorcount))
         print("FER_" + decodername + ": " + str(frameerrorcout/kaisu))
         print("BER_" + decodername + ": " + str(biteroorcount/(k*kaisu)))
         print("実行時間: " + str(end-start))
-        
+
     if len(sys.argv) == 1:
         print("k=", k, "N=", N, "r=", r, "L=", L)
 

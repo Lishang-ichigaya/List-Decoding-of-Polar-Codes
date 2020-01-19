@@ -89,6 +89,7 @@ if __name__ == '__main__':
             frameerror.append(result_i[0])
             biterror.append(result_i[1])
         end = time.time()
+        p.close()
 
         frameerrorcout = sum(frameerror)
         biteroorcount = sum(biterror)

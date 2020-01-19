@@ -57,7 +57,6 @@ if __name__ == '__main__':
                             crcenc0.Encode()
                             crcenc1 = CRC_Encoder(message.message[threshold_m:], r//2)
                             crcenc1.Encode()
-
                             crccodeword = np.concatenate([crcenc0.codeword, crcenc1.codeword])
 
                             encoder0 = Encoder(K, N, crccodeword, path, False)
