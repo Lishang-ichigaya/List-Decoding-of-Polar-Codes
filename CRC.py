@@ -2,9 +2,13 @@ import numpy as np
 
 
 class CRC:
-    def __init__(self,  message, CRClen):
-        if CRClen == 4:
+    def __init__(self, message, CRClen):
+        if CRClen == 3:
+            self.GeneratorPolynomial = np.array([1, 0, 1, 1], dtype=np.uint8)
+        elif CRClen == 4:
             self.GeneratorPolynomial = np.array([1, 0, 0, 1, 1], dtype=np.uint8)
+        elif CRClen == 6:
+            self.GeneratorPolynomial = np.array([1, 0, 0, 0, 0, 1, 1], dtype=np.uint8)
         elif CRClen == 8:
             self.GeneratorPolynomial = np.array([1, 1, 1, 0, 1, 0, 1, 0, 1], dtype=np.uint8)
         elif CRClen == 16:
@@ -22,7 +26,7 @@ class CRC_Encoder(CRC):
         """
         CRCの符号器を初期化
         message: 送信メッセージ
-        CRClen=4: CRCの長さ。2,4,8,16以外の場合は1bitCRC(パリティビット)になる
+        CRClen=4: CRCの長さ。2,3,4,6,8,16以外の場合は1bitCRC(パリティビット)になる
         """
         super().__init__(message, CRClen)
         self.codeword = np.array([], dtype=np.uint8)
@@ -89,7 +93,7 @@ class CRC_Detector(CRC):
 
 
 if __name__ == "__main__":
-    message = np.array([0,0,1,0,1,1,0,1,0,0,1,0,1,1,1,0,1,1,1], dtype=np.uint8)
+    message = np.array([0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1], dtype=np.uint8)
     r = 2
     print("msg:", message)
     crcenc = CRC_Encoder(message, r)
