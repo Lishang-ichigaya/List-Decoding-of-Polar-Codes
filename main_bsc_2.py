@@ -19,7 +19,7 @@ from CRC import CRC_Detector
 
 if __name__ == '__main__':
     k = 128
-    r = 16  # CRCの長さを変更する場合はCRC.pyも書き換える
+    r = 6  # CRCの長さを変更する場合はCRC.pyも書き換える
     K = k + r
     N = 256
     L = 4
@@ -29,11 +29,11 @@ if __name__ == '__main__':
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
 
-    kaisu = 100
+    kaisu = 1250
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
-        result_file_name = "D_OneCRC-SCLの結果.txt"
+        result_file_name = "./re/6-full.8.txt"
         for i in range(1):
-            for P in [0.06]:
+            for P in [0.03]:
                 with open(result_file_name, mode='a', encoding='utf-8') as f:
                     f.write("-----------------------P="+str(P)+"----------------------------\n")
                 for L in [4]:
@@ -86,9 +86,11 @@ if __name__ == '__main__':
 
                             # frameerrorcout0 += 0 if np.count_nonzero(error0) == 0 else 1
                             frameerrorcout1 += 0 if np.count_nonzero(error1) == 0 else 1
-                            print(i, "/", kaisu, "回目, ",
-                                  #       0 if np.count_nonzero(error0) == 0 else 1,
-                                  0 if np.count_nonzero(error1) == 0 else 1)
+                            if i%20 == 0:
+                                print(i, "/", kaisu, "回目, ",
+                                    #       0 if np.count_nonzero(error0) == 0 else 1,
+                                    #0 if np.count_nonzero(error1) == 0 else 1
+                                    )
                             
                             # print("FSCL:", "{0:.5f}".format(end0-start0), "SCL", "{0:.5f}".format(end1-start1))
                         end = time.time()
@@ -105,6 +107,10 @@ if __name__ == '__main__':
                                 #f.write("BER_" + decoder0name + ": " + str(eroorcount0/(k*kaisu))+"\n")
                                 f.write("BER_" + decoder1name + ": " + str(eroorcount1/(k*kaisu))+"\n")
                                 f.write("実行時間: " + str(end-start)+"\n")
+
+                        # if True:
+                        #     with open(result_file_name, mode='a', encoding='utf-8') as f:
+                        #         f.write(str(kaisu)+","+str(frameerrorcout1)+","+str(frameerrorcout1/kaisu)+str(k*kaisu)+"," + str(eroorcount1)+"\n")
 
                         if True:
                             print("K="+str(k)+", N="+str(N) + ", r=" + str(r) + ", L="+str(L)+", P="+str(P))

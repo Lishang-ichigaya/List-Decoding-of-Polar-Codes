@@ -19,7 +19,7 @@ np.set_printoptions(linewidth=170)
 
 if __name__ == '__main__':
     k = 128
-    r = 16  # CRCの長さ
+    r = 6  # CRCの長さ
     threshold = 48  # CRCの区切り位置
     threshold_m = threshold - r//2  # メッセージの区切り位置
     K = k + r
@@ -30,12 +30,12 @@ if __name__ == '__main__':
     P = 0.06
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
 
-    kaisu = 25000
+    kaisu = 1250
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
-        result_file_name = "D_UnfairTwoCRC-SCLの結果1.txt"
-        for threshold in [40, 48, 56]:
+        result_file_name = "./re/6-Udiv.8.txt"
+        for threshold in [42]:
             threshold_m = threshold - r//2
-            for P in [0.03, 0.06, 0.08]:
+            for P in [0.03]:
                 with open(result_file_name, mode='a', encoding='utf-8') as f:
                     f.write("-----------------------P="+str(P)+"----------------------------\n")
                 for L in [4]:
@@ -96,9 +96,11 @@ if __name__ == '__main__':
 
                             # frameerrorcout0 += 0 if np.count_nonzero(error0) == 0 else 1
                             frameerrorcout1 += 0 if np.count_nonzero(error1) == 0 else 1
-                            print(i, "/", kaisu, "回目, ",
-                                  #       0 if np.count_nonzero(error0) == 0 else 1,
-                                  0 if np.count_nonzero(error1) == 0 else 1)
+                            if i %20 == 0:
+                                print(i, "/", kaisu, "回目, ",
+                                    #       0 if np.count_nonzero(error0) == 0 else 1,
+                                    #0 if np.count_nonzero(error1) == 0 else 1
+                                    )
                             # print("FSCL:", "{0:.5f}".format(end0-start0), "SCL", "{0:.5f}".format(end1-start1))
                         end = time.time()
 
