@@ -27,13 +27,13 @@ if __name__ == '__main__':
     Llist = [L]
     M = int(np.log2(N))
     chaneltype = "BSC"
-    P = 0.06
+    P = 0.05
     Plist = [P]
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
-    SaveResult = False
-    result_file_name = "./re/"+str(N)+"_"+str(P)+"_"+str(kaisu)+".txt"
-    kaisu = 120
+    SaveResult = True
+    kaisu = 160000
+    result_file_name = "./re/"+str(N)+"_"+str(P)+"_"+str(kaisu)+"full.txt"
 
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
         for i in range(1):

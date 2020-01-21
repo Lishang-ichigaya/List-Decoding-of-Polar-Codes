@@ -33,9 +33,9 @@ if __name__ == '__main__':
     P = 0.05
     Plist = [P]
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
-    SaveResult = False
-    kaisu = 120
-    result_file_name = "./re/"+str(N)+"_"+str(P)+"_"+str(kaisu)+".txt"
+    SaveResult = True
+    kaisu = 160000
+    result_file_name = "./re/"+str(N)+"_"+str(P)+"_"+str(kaisu)+"K_2.txt"
 
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
         for threshold in thresholdlist:
