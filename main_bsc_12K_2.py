@@ -19,27 +19,33 @@ np.set_printoptions(linewidth=170)
 
 if __name__ == '__main__':
     k = 128
-    r = 6  # CRCの長さ
-    threshold = 48  # CRCの区切り位置
-    threshold_m = threshold - r//2  # メッセージの区切り位置
-    K = k + r
     N = 256
+    r = 6  # CRCの長さ
+    K = k + r
+    threshold = K//2  # CRCの区切り位置
+    threshold_m = threshold - r//2  # メッセージの区切り位置
+    thresholdlist = [threshold]
+    Nlist = [N]
     L = 4
+    Llist = [L]
     M = int(np.log2(N))
     chaneltype = "BSC"
-    P = 0.06
+    P = 0.05
+    Plist = [P]
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
+    SaveResult = False
+    kaisu = 120
+    result_file_name = "./re/"+str(N)+"_"+str(P)+"_"+str(kaisu)+".txt"
 
-    kaisu = 1250
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
-        result_file_name = "./re/6-Fdiv.8.txt"
-        for threshold in [K//2]:
+        for threshold in thresholdlist:
             threshold_m = threshold - r//2
-            for P in [0.03]:
-                # with open(result_file_name, mode='a', encoding='utf-8') as f:
-                #     f.write("-----------------------P="+str(P)+"----------------------------\n")
-                for L in [4]:
-                    for N in [256]:
+            for P in Plist:
+                if SaveResult:
+                    with open(result_file_name, mode='a', encoding='utf-8') as f:
+                        f.write("-----------------------P="+str(P)+"----------------------------\n")
+                for L in Llist:
+                    for N in Nlist:
                         k = N//2
                         K = k + r
                         eroorcount0 = 0
@@ -107,7 +113,7 @@ if __name__ == '__main__':
                             # print("FSCL:", "{0:.5f}".format(end0-start0), "SCL", "{0:.5f}".format(end1-start1))
                         end = time.time()
 
-                        if True:
+                        if SaveResult:
                             with open(result_file_name, mode='a', encoding='utf-8') as f:
                                 f.write("K="+str(k)+", N="+str(N) + ", r=" + str(r) +
                                   ", threshold="+str(threshold)+", L="+str(L)+", P="+str(P)+"\n")
