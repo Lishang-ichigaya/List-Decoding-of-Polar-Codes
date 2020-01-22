@@ -13,6 +13,7 @@ from Decoder import DecoderLR
 from Decoder import ListDecoder
 from Decoder import ListDecoder_F
 from Decoder import ListDecoder_CRC
+from Decoder import ListDecoder_TwoCRC
 from CRC import CRC_Encoder
 from CRC import CRC_Detector
 

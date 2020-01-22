@@ -14,10 +14,15 @@ def Fib(n):
     else:
         return Fib(n-1) + Fib(n-2)
 
+def Fib_wrapper(num):
+    x = 0
+    for i in range(num):
+        x += Fib(i)
+    return [x, x]
 if __name__ == "__main__":
     p = Pool(4)
     st = time.time()
-    res = p.map(Fib, range(35))
+    res = p.imap_unordered(Fib_wrapper, range(4))
     ed = time.time()
     for i in res:
         print(str(i)+", ")
@@ -26,5 +31,6 @@ if __name__ == "__main__":
     #     Fib(i)
     # ed = time.time()
     print(ed-st)
+    p.close()
 
 

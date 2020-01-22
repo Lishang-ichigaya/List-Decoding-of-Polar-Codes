@@ -27,12 +27,12 @@ if __name__ == '__main__':
     Llist = [L]
     M = int(np.log2(N))
     chaneltype = "BSC"
-    P = 0.05
+    P = 0.09
     Plist = [P]
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
     # path ="./polarcode/"+"sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
     SaveResult = True
-    kaisu = 160000
+    kaisu = 5000
     result_file_name = "./re/"+str(N)+"_"+str(P)+"_"+str(kaisu)+"full.txt"
 
     if len(sys.argv) == 2 and sys.argv[1] == "ber":

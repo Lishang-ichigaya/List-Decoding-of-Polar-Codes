@@ -30,11 +30,11 @@ if __name__ == '__main__':
     Llist = [L]
     M = int(np.log2(N))
     chaneltype = "BSC"
-    P = 0.05
+    P = 0.09
     Plist = [P]
     path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
-    SaveResult = False
-    kaisu = 160000
+    SaveResult = True
+    kaisu = 5000
     result_file_name = "./re/"+str(N)+"_"+str(P)+"_"+str(kaisu)+"42.txt"
 
     if len(sys.argv) == 2 and sys.argv[1] == "ber":
@@ -110,7 +110,7 @@ if __name__ == '__main__':
                             # print("FSCL:", "{0:.5f}".format(end0-start0), "SCL", "{0:.5f}".format(end1-start1))
                         end = time.time()
 
-                        if True:
+                        if SaveResult:
                             with open(result_file_name, mode='a', encoding='utf-8') as f:
                                 f.write("K="+str(k)+", N="+str(N) + ", r=" + str(r) +
                                   ", threshold="+str(threshold)+", L="+str(L)+", P="+str(P)+"\n")
