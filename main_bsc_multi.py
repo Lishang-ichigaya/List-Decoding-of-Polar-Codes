@@ -25,17 +25,16 @@ K = k + r
 N = 256
 L = 4
 M = int(np.log2(N))
-threshold = 42  # CRCの区切り位置
+threshold = K//2  # CRCの区切り位置
 threshold_m = threshold - r//2  # メッセージの区切り位置
 chaneltype = "BSC"
 P = 0.04
 path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
-kaisu = 400000
-decodername = "T42TwoSCL"
-SaveResult = False
-result_file_name = "./re/T42TwoSCLの結果.txt"
+kaisu = 320000
+SaveResult = True
+decodername = "OneSCL"
+result_file_name = "./re/"+str(N)+"_"+str(P)+"_"+str(kaisu)+decodername+".txt"
 parallelnum = 4
-
 
 def Simulation(i):
     # メッセージの作成
@@ -43,14 +42,10 @@ def Simulation(i):
     message.MakeMessage()
 
     # CRC符号化
-    crcenc0 = CRC_Encoder(message.message[:threshold_m], r//2)
-    crcenc0.Encode()
-    crcenc1 = CRC_Encoder(message.message[threshold_m:], r//2)
-    crcenc1.Encode()
-    crccodeword = np.concatenate([crcenc0.codeword, crcenc1.codeword])
-
+    crcenc = CRC_Encoder(message.message, r)
+    crcenc.Encode()
     # ポーラ符号符号化
-    encoder0 = Encoder(K, N, crccodeword, path, False)
+    encoder0 = Encoder(K, N, crcenc.codeword, path, False)
     encoder0.MakeCodeworde()
 
     # 通信路
@@ -60,12 +55,11 @@ def Simulation(i):
     output = bsc.output
 
     # ポーラ符号とCRC復号化
-    decoder1 = ListDecoder_TwoCRC(K, N, L, r, threshold, output, chaneltype, path, False)
+    decoder1 = ListDecoder_CRC(K, N, L, r, output, chaneltype, path, False)
     decoder1.DecodeMessage(P)
 
     # メッセージの取り出し
-    hat_message = np.delete(decoder1.hat_message, np.s_[threshold-r//2:threshold], 0)
-    hat_message = np.delete(hat_message, np.s_[k:], 0)
+    hat_message = decoder1.hat_message[:k]
 
     # フレームエラーの判定とビットエラー数の判定
     error1 = np.bitwise_xor(message.message, hat_message)
@@ -85,6 +79,10 @@ def Simulation_wrapper(num):
         result = Simulation(i)
         frameerrorsum += result[0]
         biterrorsum += result[1]
+        if SaveResult:
+            if i%100 == 0:
+                with open(result_file_name+".log", mode="a", encoding="utf-8") as log:
+                    log.write(str(num)+","+str(frameerrorsum)+","+str(i)+"\n")
 
     return [frameerrorsum, biterrorsum]
 
