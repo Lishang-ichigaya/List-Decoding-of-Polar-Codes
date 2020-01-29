@@ -9,18 +9,19 @@ def GetInformationIndex(K, path):
     return np.sort(informationindex[:K])
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("aa.py P r\nP:反転確率 r:CRC長")
-        exit
+    if len(sys.argv) != 4:
+        print("aa.py P r k\nP:反転確率 r:CRC長 k:メッセージ長")
+        exit()
 
     P = float(sys.argv[1])
     r = int(sys.argv[2])
-    infindex = GetInformationIndex(128+r, "./sort_I_8_"+str(P)+"_20.dat")
-    IW_n = np.loadtxt("IW.txt")
+    k = int(sys.argv[3])
+    infindex = GetInformationIndex(k+r, "../sort_I/sort_I_8_"+str(P)+"_20.dat")
+    IW_n = np.loadtxt("IW"+sys.argv[1][1:]+".txt")
 
     #print(sum(IW_n[infindex[:threshold]]))
     #print(sum(IW_n[infindex[threshold:]]))
-    unrel = np.where(IW_n[infindex]<0.9999)
+    unrel = np.where(IW_n[infindex]<0.99)
     #print(IW_n[infindex[unrel]])
     #print(unrel)
-    print(unrel[0][len(unrel[0])//2])
+    print(unrel[0][len(unrel[0])//2]+1)

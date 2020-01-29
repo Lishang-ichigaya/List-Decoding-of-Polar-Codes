@@ -13,12 +13,12 @@ from Decoder import ListDecoder_F
 
 
 if __name__ == '__main__':
-    K = 256
-    N = 512
-    L = 2
+    K = 220
+    N = 256
+    L = 1
     M = int(np.log2(N))
     chaneltype = "BEC"
-    e = 0.4
+    e = 0.1
     kaisu = 1000
 
     path = "./sort_I/sortI_BEC_"+ str(e) + "_" + str(N) + ".dat"
@@ -26,13 +26,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 2:
         if sys.argv[1] == "ber":
-            for e in [0.4]:
-                #K = 8
-                #N = 16
-                #M = int(np.log2(N))
-                # if True:
-                #    with open("bectakusan.txt",mode='a',encoding='utf-8') as f:
-                #        f.write("-----------------------"+str(e)+"----------------------------\n")
+            for e in [0.1]:
                 for j in range(1):
                     eroorcount0 = 0
                     frameerrorcout0 = 0
@@ -103,7 +97,7 @@ if __name__ == '__main__':
                         print("実行時間: " + str(end-start))
 
     if len(sys.argv) == 1:
-        print("K=", K, "N=", N, "L=", L)
+        print("K=", K, "N=", N)
 
         message = Message(K)
         message.MakeMessage()
@@ -125,7 +119,7 @@ if __name__ == '__main__':
         #hat_message0.message = decoder0.hat_message
         #print("メッセージ推定値 W:\t", hat_message0.message)
 
-        decoder1 = ListDecoder_F(K, N, L, output, chaneltype, path)
+        decoder1 = DecoderLR(K, N, output, chaneltype, path)
         decoder1.DecodeMessage(e)
         hat_message1 = Message(K)
         hat_message1.message = decoder1.hat_message
@@ -134,6 +128,6 @@ if __name__ == '__main__':
         #error0 = np.bitwise_xor(message.message, hat_message0.message)
         #print("誤り数 W:", np.count_nonzero(error0))
         error1 = np.bitwise_xor(message.message, hat_message1.message)
-        chanelerror = np.bitwise_xor(encoder0.codeword, bec.output)
-        print("通信路での誤り数:", np.count_nonzero(chanelerror), "/", N)
+        # chanelerror = np.bitwise_xor(encoder0.codeword, bec.output)
+        print("通信路での消失数:", len(np.where(bec.output==3)[0]), "/", N)
         print("誤り数:", np.count_nonzero(error1))

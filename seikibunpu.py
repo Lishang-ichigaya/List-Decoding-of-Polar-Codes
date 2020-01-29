@@ -9,7 +9,10 @@ import sys
 # for E_bN_0 in [1.0, 1.5, 2.0, 2.5, 3.0]:
 #     bunsan = 10**(-E_bN_0/10)
 #     print(bunsan)
+if __name__ == "__main__":
+    sigma = 0.50
+    F__puls1 = norm.cdf(x=0, loc=1, scale = sigma)
+    F_minus1 = norm.cdf(x=0, loc=-1, scale = sigma)
+    P = (F__puls1)/(F__puls1 + F_minus1)
 
-for sigma in [0.794328, 0.707946, 0.630957, 0.562341, 0.501187]:
-    P = norm.cdf(x=0, loc=1, scale = sigma)
     print(P)

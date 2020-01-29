@@ -1,4 +1,5 @@
 import csv
+import sys
 
 def CaliculateI_BEC(e, N, i):
     if N == 1 and i == 0:
@@ -12,8 +13,8 @@ def CaliculateI_BEC(e, N, i):
 
 
 if __name__ == "__main__":
-    e = 0.1
-    N = 1024
+    e = 0.8
+    N = 256
     sum = 0
     I_i = {}
     for i in range(N):

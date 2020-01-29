@@ -151,7 +151,6 @@ class ListDecoder_F:
         # メッセージの取り出し
         self.hat_message = message
 
-
 class ListDecoder_CRC(ListDecoder_F):
     def __init__(self, K, N, L, r, chaneloutput, chaneltype, path, checker=True):
         super().__init__(K, N, L, chaneloutput, chaneltype, path, checker)

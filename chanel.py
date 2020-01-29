@@ -23,59 +23,33 @@ class BEC:
         self.e = e
         self.input = np.array([], dtype=np.uint8)
         self.output = np.array([], dtype=np.uint8)
-
+    
     def Transmission(self):
-        for i in range(np.size(self.input)):
-            tmp = self.input[i] if rand() > self.e else 3
-            self.output = np.insert(self.output, i, tmp)
+        n = np.size(self.input)
+        noise = rand(n)
+        output = self.input
+        output[np.where(self.e > noise)] = 3
+        self.output = output
 
 
 if __name__ == "__main__":
-    #    N = 16
-    #    input = np.array([1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0])
-    #    bsc = BSC(1)
-    #    bsc.input = input
-    #    bsc.Transmission2()
-    #    output = bsc.output
-    #    print(input)
-    #    print(output)
+    N = 256
+    kaisu = 1000
+    sum0 = 0
+    P = 0.1
 
-    N = 512
-    kaisu = 10000
-    sum = 0
-    P = 0.7
-    a = 0
-    # start = time.time()
-    # for i in range(kaisu):
-    #     input = np.full([N], a, dtype=np.uint8)
-
-    #     bsc = BSC(P)
-    #     bsc.input = input
-    #     bsc.Transmission()
-
-    #     output = bsc.output
-    #     sum += np.count_nonzero(output)
-    #     #print(sum)
-    #     #print(output)
-    # end = time.time()
-    # print("高速化なし")
-    # print("時間", end-start)
-    # print("誤り率", sum / (N * kaisu))
-
-    sum = 0
-    start = time.time()
     for i in range(kaisu):
-        input = np.full([N], a, dtype=np.uint8)
+        input = np.random.randint(0,2,N) 
+        # input = np.full([N], 1, dtype=np.uint8)
 
         bsc = BSC(P)
         bsc.input = input
         bsc.Transmission()
 
         output = bsc.output
-        sum += np.count_nonzero(output)
+        hikaku = input^output
+        sum0 += len(np.where(hikaku ==1)[0])
+        # print(len(np.where(output ==3)[0]))
         # print(sum)
-        # print(output)
-    end = time.time()
-    print("高速化あり")
-    print("時間", end-start)
-    print("誤り率", sum / (N * kaisu))
+        # print(hikaku)
+    print("誤り率", sum0 / (N * kaisu))
