@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     #print(sum(IW_n[infindex[:threshold]]))
     #print(sum(IW_n[infindex[threshold:]]))
-    unrel = np.where(IW_n[infindex]<0.99)
+    unrel = np.where(IW_n[infindex]<0.993)
     #print(IW_n[infindex[unrel]])
     #print(unrel)
     print(unrel[0][len(unrel[0])//2]+1)
