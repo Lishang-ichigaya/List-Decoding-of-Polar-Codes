@@ -19,14 +19,14 @@ np.set_printoptions(linewidth=100)
 #from Decoder import ListDecoder
 
 
-k = 85
-N = 256
+k = 256
+N = 512
 r = 6  # CRCの長さ
-P = 0.12
+P = 0.09   #for文で変えます
+kaisu = 1000 #for文で変えます
 L = 4
 K = k + r
-threshold = 24  # CRCの区切り位置
-kaisu = 4000
+threshold = K//2  # CRCの区切り位置
 SaveResult = False
 SaveLog = False
 decodername = "SCTest"
@@ -83,6 +83,7 @@ def Simulation_wrapper(num):
     frameerrorsum = 0
     biterrorsum = 0
     np.random.seed(int(time.time()) + num)
+    
     for i in range(kaisu//parallelnum):
         result = Simulation(i)
         frameerrorsum += result[0]
@@ -103,6 +104,7 @@ if __name__ == '__main__':
         biterror = 0
 
         start = time.time()
+        
         for result_i in result:
             frameerror += result_i[0]
             biterror += result_i[1]
@@ -123,9 +125,9 @@ if __name__ == '__main__':
 
         print(decodername)
         print("K="+str(k)+", N="+str(N) + ", r=" + str(r) +
-              ", threshold="+str(threshold)+", L="+str(L)+", P="+str(P))
+            ", threshold="+str(threshold)+", L="+str(L)+", P="+str(P))
         print("回数: "+str(kaisu)+", 送信メッセージ数: " + str(k*kaisu)+", " + decodername +
-              ", フレームエラー数" + str(frameerrorcout)+", ビットエラー数: " + str(biteroorcount))
+            ", フレームエラー数" + str(frameerrorcout)+", ビットエラー数: " + str(biteroorcount))
         print("FER_" + decodername + ": " + str(frameerrorcout/kaisu))
         print("BER_" + decodername + ": " + str(biteroorcount/(k*kaisu)))
         print("実行時間: " + str(end-start))
