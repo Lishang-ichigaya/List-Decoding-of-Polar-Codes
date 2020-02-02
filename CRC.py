@@ -11,6 +11,8 @@ class CRC:
             self.GeneratorPolynomial = np.array([1, 0, 0, 0, 0, 1, 1], dtype=np.uint8)
         elif CRClen == 8:
             self.GeneratorPolynomial = np.array([1, 1, 1, 0, 1, 0, 1, 0, 1], dtype=np.uint8)
+        elif CRClen == 12:
+            self.GeneratorPolynomial = np.array([1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1], dtype=np.uint8)
         elif CRClen == 16:
             self.GeneratorPolynomial = np.array([1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1], dtype=np.uint8)
         else:
