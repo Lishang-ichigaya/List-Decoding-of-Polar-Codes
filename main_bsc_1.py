@@ -11,7 +11,7 @@ from chanel import BSC
 from Decoder import DecoderW
 from Decoder import DecoderLR
 from Decoder import ListDecoder
-from Decoder import ListDecoder_F
+from Decoder import ListDecoder
 from Decoder import ListDecoder_CRC
 from Decoder import ListDecoder_TwoCRC
 from CRC import CRC_Encoder
@@ -19,10 +19,10 @@ from CRC import CRC_Detector
 
 
 if __name__ == '__main__':
-    k = 128
-    r = 0  
+    k = 256
+    r = 6
     K = k + r
-    N = 256
+    N = 512
     L = 4
     M = int(np.log2(N))
     chaneltype = "BSC"
@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
                             decoder1name = "SCL"
                             # start1 = time.time()
-                            decoder1 = ListDecoder_F(K, N, L, output, chaneltype, path, False)
+                            decoder1 = ListDecoder(K, N, L, output, chaneltype, path, False)
                             decoder1.DecodeMessage(P)
                             hat_message1 = Message(k)
                             hat_message1.message = decoder1.hat_message
@@ -89,12 +89,12 @@ if __name__ == '__main__':
 
                             # frameerrorcout0 += 0 if np.count_nonzero(error0) == 0 else 1
                             frameerrorcout1 += 0 if np.count_nonzero(error1) == 0 else 1
-                            if i%20 == 0:
+                            if i % 20 == 0:
                                 print(i, "/", kaisu, "回目, ",
-                                    #       0 if np.count_nonzero(error0) == 0 else 1,
-                                    #0 if np.count_nonzero(error1) == 0 else 1
-                                    )
-                            
+                                      #       0 if np.count_nonzero(error0) == 0 else 1,
+                                      #0 if np.count_nonzero(error1) == 0 else 1
+                                      )
+
                             # print("FSCL:", "{0:.5f}".format(end0-start0), "SCL", "{0:.5f}".format(end1-start1))
                         end = time.time()
 
@@ -130,39 +130,48 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         print("K=", k, "N=", N, "r=", r, "L=", L)
 
+        t0 = time.time()
         message = Message(k)
         message.MakeMessage()
+        t1 = time.time()
         print("メッセージ:\t\t", message.message)
 
+        t2 = time.time()
         crcenc = CRC_Encoder(message.message, r)
         crcenc.Encode()
+        t3 = time.time()
         print("CRC付与:\t\t", crcenc.codeword)
 
+        t4 = time.time()
         encoder0 = Encoder(K, N, crcenc.codeword, path)
         encoder0.MakeCodeworde()
+        t5 = time.time()
         print("符号語:\t\t\t", encoder0.codeword)
 
+        t6 = time.time()
         bsc = BSC(P)
         bsc.input = encoder0.codeword
         bsc.Transmission()
         output = bsc.output
+        t7 = time.time()
         print("通信路出力:\t\t", output)
 
-        # decoder0 = ListDecoder_F(K, N, L, output, chaneltype, path, False)
-        # decoder0.DecodeMessage(P)
-        # hat_message0 = Message(K)
-        # hat_message0.message = decoder0.hat_message
-        # print("  SCLメッセージ推定値:\t", hat_message1.message)
-
+        t8 = time.time()
         decoder1 = ListDecoder_CRC(K, N, L, r, output, chaneltype, path, False)
         decoder1.DecodeMessage(P)
         hat_message1 = Message(K)
         hat_message1.message = decoder1.hat_message[:k]
+        t9 = time.time()
         print("CASCLメッセージ推定値:\t", hat_message1.message)
 
-        # print("本当のメッセージ:\t", message.message)
-
-        # error0 = np.bitwise_xor(message.message, hat_message0.message)
-        # print("  SCL誤り数:", np.count_nonzero(error0))
         error1 = np.bitwise_xor(message.message, hat_message1.message)
         print("CASCL誤り数:", np.count_nonzero(error1))
+        time_msg = t1-t0
+        time_crc = t3-t2
+        time_enc = t5-t4
+        time_ch = t7-t6
+        time_dec = t9-t8
+        time_sum = time_msg + time_crc + time_enc + time_ch + time_dec
+        print("メッセージ作成:", 100*time_msg/time_sum, "CRC付与:", 100*time_crc/time_sum, "符号化:", 100 *
+              time_enc/time_sum, "通信路:", 100*time_ch/time_sum, "復号化:", 100*time_dec/time_sum)
+        print(time_enc)

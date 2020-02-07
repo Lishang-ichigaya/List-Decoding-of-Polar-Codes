@@ -1,5 +1,5 @@
 import numpy as np
-
+import time
 
 class Encoder:
     def __init__(self, K, N, message, path, checker=True):
@@ -25,6 +25,7 @@ class Encoder:
         self.message_prime[informationindex] = self.message
         if self.checker == True:
             print("メッセージもどき： \t", self.message_prime)
+        #↓の処理がそこそこ重いけど、numpyだしもう高速化はむり？
         self.codeword = np.dot(self.message_prime, GetGeneratorMatrix(self.N)) % 2
         self.codeword = self.codeword.A1
     def GetMessagePrime(self):

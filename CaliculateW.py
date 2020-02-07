@@ -6,7 +6,6 @@ from decimal import getcontext
 # i +
 #  n * branch,  m=log2(n)
 
-
 def CalculateW_BSC(p, N, chaneloutput_y, i, u_i, estimatedcodeword_u, matrixP, branch):
     """
     入力がu_iであるときの事後確率W(y^n,u^i-1|u_i)を計算する
@@ -83,7 +82,6 @@ def CalculateW_BSC(p, N, chaneloutput_y, i, u_i, estimatedcodeword_u, matrixP, b
     # print(W)
     return W
 
-
 def CalculateW_BSC_2(p, N, chaneloutput_y, i, u_i, estimatedcodeword_u):
     """
     入力がu_iであるときの事後確率W(y^n,u^i-1|u_i)を計算する
@@ -153,7 +151,6 @@ def CalculateW_BSC_2(p, N, chaneloutput_y, i, u_i, estimatedcodeword_u):
              * CalculateW_BSC_2(p, int(N/2), y_1, int(j/2), hat_u_i_minus_1 ^ u_i, hat_u1)
              * CalculateW_BSC_2(p, int(N/2), y_2, int(j/2), u_i, hat_u2))
     return W
-
 
 def CalculateW_BEC(e, N, chaneloutput_y, i, u_i, estimatedcodeword_u, matrixP, branch):
     """
@@ -239,7 +236,6 @@ def CalculateW_BEC(e, N, chaneloutput_y, i, u_i, estimatedcodeword_u, matrixP, b
              * CalculateW_BEC(e, int(N/2), y_2, int(j/2), u_i, hat_u2, matrixP, 2*branch+1))
     matrixP[i + N * branch][M][u_i[0]] = W
     return W
-
 
 def CalculateW_BEC_2(e, N, chaneloutput_y, i, u_i, estimatedcodeword_u):
     """

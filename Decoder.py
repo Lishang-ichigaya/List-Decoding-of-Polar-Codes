@@ -16,6 +16,7 @@ np.set_printoptions(linewidth=200)
 getcontext().prec = 28
 import copy
 from tkinter import messagebox
+import time
 
 class ListDecoder_F:
     def __init__(self, K, N, L, chaneloutput, chaneltype, path, checker=True):
@@ -163,7 +164,7 @@ class ListDecoder_CRC(ListDecoder_F):
         """
         self.DecodeOutput(P)
         # print("\t\t\t",self.hat_message_prime)
-
+        
         informationindex = np.sort(GetInformationIndex(self.K, self.path)[:self.K])
         is_nocrc = True
         likelypass = self.hat_message_list[0]
@@ -180,7 +181,7 @@ class ListDecoder_CRC(ListDecoder_F):
                 self.hat_message = message
                 break
             # print(l)
-
+        t4 = time.time()
         if is_nocrc:
             # CRCが一つも一致しない場合の操作
             self.hat_message = likelypass[informationindex]
