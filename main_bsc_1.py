@@ -19,10 +19,10 @@ from CRC import CRC_Detector
 
 
 if __name__ == '__main__':
-    k = 256
+    k = 32
     r = 6
     K = k + r
-    N = 512
+    N = 64
     L = 4
     M = int(np.log2(N))
     chaneltype = "BSC"
