@@ -25,9 +25,9 @@ def CalculateW_BSC(p, N, chaneloutput_y, i, u_i, estimatedcodeword_u, matrixP, b
     if M == 0:
         # 再起の終了条件
         if u_i == np.array([0]):
-            W = 1-p if chaneloutput_y == np.array([0]) else p
+            W = Decimal(str(1-p)) if chaneloutput_y == np.array([0]) else Decimal(str(p))
         elif u_i == np.array([1]):
-            W = p if chaneloutput_y == np.array([0]) else 1-p
+            W = Decimal(str(p)) if chaneloutput_y == np.array([0]) else Decimal(str(1-p))
         else:
             print("error")
             exit(1)  # 起こったらだめ
@@ -66,16 +66,16 @@ def CalculateW_BSC(p, N, chaneloutput_y, i, u_i, estimatedcodeword_u, matrixP, b
     if i % 2 == 0:
         # u_i+1が0と1の場合について和をとる
         u_i_puls_1 = np.array([0], dtype=np.uint8)
-        W_1 = (0.5
+        W_1 = (Decimal("0.5")
                * CalculateW_BSC(p, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1, matrixP, 2*branch)
                * CalculateW_BSC(p, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2, matrixP, 2*branch+1))
         u_i_puls_1 = np.array([1], dtype=np.uint8)
-        W_2 = (0.5
+        W_2 = (Decimal("0.5")
                * CalculateW_BSC(p, int(N/2), y_1, int(j/2), u_i ^ u_i_puls_1, hat_u1, matrixP, 2*branch)
                * CalculateW_BSC(p, int(N/2), y_2, int(j/2), u_i_puls_1, hat_u2, matrixP, 2*branch+1))
         W = W_1 + W_2
     else:
-        W = (0.5
+        W = (Decimal("0.5")
              * CalculateW_BSC(p, int(N/2), y_1, int(j/2), hat_u_i_minus_1 ^ u_i, hat_u1, matrixP, 2*branch)
              * CalculateW_BSC(p, int(N/2), y_2, int(j/2), u_i, hat_u2, matrixP, 2*branch+1))
     matrixP[i + N * branch][M][u_i[0]] = W

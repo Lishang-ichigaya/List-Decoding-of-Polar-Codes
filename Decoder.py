@@ -58,8 +58,8 @@ class ListDecoder_F:
         self.activePath[0] = True
         # アクティブなパスを示す配列の0番目だけ初期化
         tmp_list = [np.array([], dtype=np.uint8)] * (2*self.L)
-        tmp_W = np.full((2 * self.L), -1.0)
-        tmp_matrixP = np.full((self.L, self.N,  int(np.log2(self.N))+1, 2), -1.0)
+        tmp_W = np.full((2 * self.L), Decimal("-1.0"))
+        tmp_matrixP = np.full((self.L, self.N,  int(np.log2(self.N))+1, 2), Decimal("-1.0"))
         tmp_activePath = [False] * (2 * self.L)
         if self.chaneltype == "BSC":
             for i in range(self.N):

@@ -19,10 +19,10 @@ from CRC import CRC_Detector
 
 
 if __name__ == '__main__':
-    k = 32
+    k = 256
     r = 6
     K = k + r
-    N = 64
+    N = 512
     L = 4
     M = int(np.log2(N))
     chaneltype = "BSC"
@@ -174,4 +174,4 @@ if __name__ == '__main__':
         time_sum = time_msg + time_crc + time_enc + time_ch + time_dec
         print("メッセージ作成:", 100*time_msg/time_sum, "CRC付与:", 100*time_crc/time_sum, "符号化:", 100 *
               time_enc/time_sum, "通信路:", 100*time_ch/time_sum, "復号化:", 100*time_dec/time_sum)
-        print(time_enc)
+        print(t9-t0)
