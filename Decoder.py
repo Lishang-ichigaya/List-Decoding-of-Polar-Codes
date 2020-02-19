@@ -67,8 +67,8 @@ class ListDecoder_F:
                 if i == informationindex[j]:
                     for l in range(self.L):
                         if self.activePath[l] == True:
-                            tmp_list[2*l] = np.insert(self.hat_message_list[l], i, np.array([0]))
-                            tmp_list[2*l + 1] = np.insert(self.hat_message_list[l], i, np.array([1]))
+                            tmp_list[2*l] = np.insert(self.hat_message_list[l], i, 0)
+                            tmp_list[2*l + 1] = np.insert(self.hat_message_list[l], i, 1)
                             tmp_activePath[2*l] = True
                             tmp_activePath[2*l + 1] = True
                             tmp_W[2*l] = CalculateW_BSC(P, self.N, self.chaneloutput, i, np.array(
@@ -88,14 +88,14 @@ class ListDecoder_F:
                     for l in range(self.L):
                         if tmp_activePath[sort_W_index[l]] == True:
                             self.hat_message_list[l] = tmp_list[sort_W_index[l]]
-                            self.matrixP[l] = tmp_matrixP[int(sort_W_index[l]/2)]
+                            self.matrixP[l] = tmp_matrixP[sort_W_index[l]//2]
                             # print(self.hat_message_list[l])
                             self.activePath[l] = True
                     j += 1
                 else:
                     for l in range(self.L):
                         if self.activePath[l] == True:
-                            self.hat_message_list[l] = np.insert(self.hat_message_list[l], i, np.array([0]))
+                            self.hat_message_list[l] = np.insert(self.hat_message_list[l], i, 0)
                 # print(self.hat_message_list)
             # ここまででメインの処理はおわり
 
@@ -104,8 +104,8 @@ class ListDecoder_F:
                 if i == informationindex[j]:
                     for l in range(self.L):
                         if self.activePath[l] == True:
-                            tmp_list[2*l] = np.insert(self.hat_message_list[l], i, np.array([0]))
-                            tmp_list[2*l + 1] = np.insert(self.hat_message_list[l], i, np.array([1]))
+                            tmp_list[2*l] = np.insert(self.hat_message_list[l], i, 0)
+                            tmp_list[2*l + 1] = np.insert(self.hat_message_list[l], i, 1)
                             tmp_activePath[2*l] = True
                             tmp_activePath[2*l + 1] = True
                             tmp_W[2*l] = CalculateW_BEC(P, self.N, self.chaneloutput, i, np.array(
@@ -121,13 +121,13 @@ class ListDecoder_F:
                     for l in range(self.L):
                         if tmp_activePath[sort_W_index[l]] == True:
                             self.hat_message_list[l] = tmp_list[sort_W_index[l]]
-                            self.matrixP[l] = tmp_matrixP[int(sort_W_index[l]/2)]
+                            self.matrixP[l] = tmp_matrixP[sort_W_index[l]//2]
                             self.activePath[l] = True
                     j += 1
                 else:
                     for l in range(self.L):
                         if self.activePath[l] == True:
-                            self.hat_message_list[l] = np.insert(self.hat_message_list[l], i, np.array([0]))
+                            self.hat_message_list[l] = np.insert(self.hat_message_list[l], i, 0)
             # ここまででメインの処理はおわり
 
         if self.checker:
@@ -181,7 +181,6 @@ class ListDecoder_CRC(ListDecoder_F):
                 self.hat_message = message
                 break
             # print(l)
-        t4 = time.time()
         if is_nocrc:
             # CRCが一つも一致しない場合の操作
             self.hat_message = likelypass[informationindex]
@@ -213,8 +212,8 @@ class ListDecoder_TwoCRC(ListDecoder_CRC):
                 if i == informationindex[j]:
                     for l in range(self.L):
                         if self.activePath[l] == True:
-                            tmp_list[2*l] = np.insert(self.hat_message_list[l], i, np.array([0]))
-                            tmp_list[2*l + 1] = np.insert(self.hat_message_list[l], i, np.array([1]))
+                            tmp_list[2*l] = np.insert(self.hat_message_list[l], i, 0)
+                            tmp_list[2*l + 1] = np.insert(self.hat_message_list[l], i, 1)
                             tmp_activePath[2*l] = True
                             tmp_activePath[2*l + 1] = True
                             tmp_W[2*l] = CalculateW_BSC(P, self.N, self.chaneloutput, i, np.array(

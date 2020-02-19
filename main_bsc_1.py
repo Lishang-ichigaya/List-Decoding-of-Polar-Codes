@@ -23,7 +23,7 @@ if __name__ == '__main__':
     r = 6
     K = k + r
     N = 512
-    L = 4
+    L = 8
     M = int(np.log2(N))
     chaneltype = "BSC"
     P = 0.06
