@@ -29,6 +29,9 @@ class BMSchannel:
                         w_w += w
                     w_w *= 0.5
                     W_W.W[u_1][i*W.N + j] = w_w
+        tmp = W_W.W.T
+        tmp = np.array(sorted(tmp, key=lambda x: x[0]))
+        W_W.W = tmp.T
         return W_W
 
     @classmethod
@@ -45,6 +48,9 @@ class BMSchannel:
                     for u_1 in [0, 1]:
                         w_w = 0.5*W.W[(u_1+u_2) % 2][i] * W.W[u_2][j]
                         W_W.W[u_2][i*W.N*2 + j*2 + u_1] = w_w
+        tmp = W_W.W.T
+        tmp = np.array(sorted(tmp, key=lambda x: x[0]))
+        W_W.W = tmp.T
         return W_W
 
 
