@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-int m = 2;
+int m = 3;
 typedef struct matrix
 {
     double x0; //入力0
