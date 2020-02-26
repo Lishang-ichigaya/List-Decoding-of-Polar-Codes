@@ -35,7 +35,7 @@ decodername = "SCTest"
 M = int(np.log2(N))
 threshold_m = threshold - r//2  # メッセージの区切り位置
 chaneltype = "BSC"
-path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
+path = "./sort_I/" + chaneltype + "/sort_I_" + str(M) + "_" + str(P) + ".dat"
 # path = "./sort_I/sortI_BEC_" + str(P) + "_" + str(N) + ".dat"
 result_file_name = "./result/"+str(N)+"_"+str(P)+"_"+str(kaisu)+decodername+".txt"
 

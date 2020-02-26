@@ -19,11 +19,11 @@ np.set_printoptions(linewidth=100)
 #from Decoder import ListDecoder
 
 
-k = 256
-N = 512
+k = 512
+N = 1024
 r = 12  # CRCの長さ
-P = 0.09   
-kaisu = 1080  
+P = 0.07   
+kaisu = 300  
 parallelnum = 3
 L = 4
 K = k + r
@@ -35,7 +35,7 @@ decodername = "OneCRC"
 M = int(np.log2(N))
 threshold_m = threshold - r//2  # メッセージの区切り位置
 chaneltype = "BSC"
-path = "./sort_I/sort_I_" + str(M) + "_" + str(P) + "_" + "20" + ".dat"
+path = "./sort_I/" + chaneltype + "/sort_I_" + str(M) + "_" + str(P) + ".dat"
 # path = "./sort_I/sortI_BEC_" + str(P) + "_" + str(N) + ".dat"
 result_file_name = "./result/"+str(N)+"_"+str(P)+"_"+str(kaisu)+decodername+".txt"
 

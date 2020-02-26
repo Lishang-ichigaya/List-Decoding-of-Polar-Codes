@@ -5,7 +5,7 @@ class BMSchannel:
     def __init__(self, W, N):
         """
         BMSchannelの初期化\n
-        W:通信路を表す行列.  N:通信路出力の総数( 例:5出力なら2^5=32 )
+        W:通信路を表す行列(リスト).  N:通信路出力の総数( 例:5出力なら2^5=32 )
         """
         if len(W[0]) != len(W[1]):
             raise TypeError("適切なWを使用してね")

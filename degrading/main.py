@@ -17,7 +17,10 @@ if __name__ == "__main__":
     N = 1024
     M = int(np.log2(N))
     mu = 8
-    W_0 = [[0.89, 0.11],[0.11, 0.89]]
+    p = 0.03
+    W_0 = [[1-p, p],[p, 1-p]]
+    I_W = [None]*N
+    filename = "sort_I_"+str(M)+"_"+str(p)+".dat"
     
 
     for i in range(N):
@@ -34,5 +37,13 @@ if __name__ == "__main__":
             Q = deg.merge()
         
         I = getSymmetricChannelCapacity(Q)
-        print(I)
+        I_W[i] = I
+        # print(i)
+    sorted_index = np.argsort(I_W)
+    print(sorted_index)
+    with open(filename, mode='a', encoding='utf-8') as f:
+        for i in range(N):
+            f.write(str(sorted_index[i])+" ")
+
+    
 
