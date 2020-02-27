@@ -1,8 +1,9 @@
 import numpy as np
-from CaliculateW import CalculateW_BSC_2
 from BMSchannel import BMSchannel
 import time
 import copy
+
+import matplotlib.pyplot as plt
 
 
 class _deg_data():
@@ -46,7 +47,6 @@ class degrading_merge():
         m = min(deltaI_list)
         i = deltaI_list.index(m)
         return i
-
 
     def _ConstructQ(self):
         Q_0 = [self.data_list[0].a_0]
@@ -101,50 +101,48 @@ class degrading_merge():
         return Q
 
 
+class degrading_merge_AWGN():
+    def __init__(self, snr, R, mu):
+        """
+        AWGN通信路のdegrading_mergeに関するクラス\n
+        snr: AWGN通信路のSN比(E_b/N_0[db])\n
+        R:   符号化レート(k/n)\n
+        mu: degradingした通信路の最大出力数 
+        """
+        self.mu = 1
+        self.variance = 10**(-snr/10)/(2*R)
+
+    def _GetSubset(self):
+        range_num = 10000
+        y_range = [(1/range_num)*i for i in range(range_num + 1)]
+        lambda_ = [np.exp(2*y/self.variance) for y in y_range]
+        def C(x): return 1-(x/(x+1))*np.log2(1+1/x) - (1/(x+1))*np.log2(x+1)
+        Capacity = [C(lam) for lam in lambda_]
+
+        data = np.array([y_range,  Capacity])
+        data = data.T
+        # plt.plot(lambda_ ,Capacity)
+        # plt.show()
+        nu = self.mu//2
+
+        A = [[] for _ in range(nu)]       
+        for j in range(range_num):
+            for i in range(1, nu+1):
+                if((i-1)/nu <= C < i/nu):
+                    y = np.where(data[j][1]==C)
+                    A[i].append(y)
+
+        
+
+            
+
+
+    def merge(self):
+        Q = 0
+
+        return Q
+
+
 if __name__ == "__main__":
-    W = [[0.89, 0.11], [0.11, 0.89]]
-    W_0 = BMSchannel(W, 2)
-
-    W_1 = [None]*2
-    W_2 = [None]*4
-    W_3 = [None]*8
-    for m in range(3):
-        for i in range(2//2):
-            W_1[i] = BMSchannel.mul_sq(W_0)
-            W_1[i+1] = BMSchannel.mul_cir(W_0)
-        for i in range(4//2):
-            W_2[2*i] = BMSchannel.mul_sq(W_1[i])
-            W_2[2*i+1] = BMSchannel.mul_cir(W_1[i])
-        for i in range(8//2):
-            W_3[2*i] = BMSchannel.mul_sq(W_2[i])
-            W_3[2*i+1] = BMSchannel.mul_cir(W_2[i])
-
-    Qtrue = W_3[5]
-    merge = degrading_merge(Qtrue, 8)
-    Q = merge.merge()
-
-    
-    I = 0
-    for x in [0, 1]:
-        for y in range(Qtrue.N):
-            I += Qtrue.W[x][y] * np.log2(Qtrue.W[x][y]/(Qtrue.W[0][y]+Qtrue.W[1][y]))
-    I = 1+0.5*I
-    print(I)
-
-    I = 0
-    for x in [0, 1]:
-        for y in range(Q.N):
-            I += Q.W[x][y] * np.log2(Q.W[x][y]/(Q.W[0][y]+Q.W[1][y]))
-    I = 1+0.5*I
-    print(I)
-
-    print(Qtrue.N,"\n",Qtrue.W)
-    # for y in range(Qtrue.N):
-    #     print(Qtrue.W[0][y]/Qtrue.W[1][y])
-    
-    print("-----------------")
-    print(Q.N,"\n",Q.W)
-    # print(Q.N == len(Q.W[0]))
-
-    # for y in range(Q.N):
-    #     print(Q.W[0][y]/Q.W[1][y])
+    a = degrading_merge_AWGN(1, 0.5, 8)
+    a._GetSubset()
