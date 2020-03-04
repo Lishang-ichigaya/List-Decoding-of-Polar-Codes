@@ -12,6 +12,9 @@ class BMSchannel:
         self.W = np.array(W)
         self.N = N
 
+    def __str__(self):
+        return "length: "+str(self.N)+"\n"+str(self.W)
+
     @classmethod
     def mul_sq(cls, W):
         if type(W) is not BMSchannel:

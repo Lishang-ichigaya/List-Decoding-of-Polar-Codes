@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.stats import norm
 from BMSchannel import BMSchannel
 import time
 import copy
@@ -109,40 +110,109 @@ class degrading_merge_AWGN():
         R:   符号化レート(k/n)\n
         mu: degradingした通信路の最大出力数 
         """
-        self.mu = 1
+        self.mu = mu
         self.variance = 10**(-snr/10)/(2*R)
 
-    def _GetSubset(self):
-        range_num = 10000
-        y_range = [(1/range_num)*i for i in range(range_num + 1)]
-        lambda_ = [np.exp(2*y/self.variance) for y in y_range]
-        def C(x): return 1-(x/(x+1))*np.log2(1+1/x) - (1/(x+1))*np.log2(x+1)
-        Capacity = [C(lam) for lam in lambda_]
-
-        data = np.array([y_range,  Capacity])
-        data = data.T
-        # plt.plot(lambda_ ,Capacity)
-        # plt.show()
-        nu = self.mu//2
-
-        A = [[] for _ in range(nu)]       
-        for j in range(range_num):
-            for i in range(1, nu+1):
-                if((i-1)/nu <= C < i/nu):
-                    y = np.where(data[j][1]==C)
-                    A[i].append(y)
-
-        
-
-            
-
-
     def merge(self):
-        Q = 0
+        """
+        AWGN通信路のdegrading_mergeを行うメソッド
+        戻り地: degrading mergeで得られるBMSchanelクラス
+        """
+        A_i = self._GetSubset()
+        # print(A_i)
 
+        Q_0 = []
+        Q_1 = []
+        for i in range(self.mu//2):
+            y_left = A_i[i][0]
+            y_right = A_i[i][1]
+            stdev = np.sqrt(self.variance)
+            
+            right_cdf_0 = norm.cdf(x=y_right, loc=+1, scale=stdev)
+            left_cdf_0 = norm.cdf(x=y_left, loc=+1, scale=stdev)
+            q_0 = right_cdf_0 - left_cdf_0
+            
+            right_cdf_1 = norm.cdf(x=y_right, loc=-1, scale=stdev)
+            left_cdf_1 = norm.cdf(x=y_left, loc=-1, scale=stdev)
+            q_1 = right_cdf_1 - left_cdf_1
+            if q_0<0 or q_1<0:
+                print(i)
+
+            Q_0.append(q_0)
+            Q_1.append(q_1)
+        
+        tmp = copy.copy(Q_0)
+        Q_0.extend(Q_1)
+        Q_1.extend(tmp)
+
+        Q = BMSchannel([Q_0, Q_1], len(Q_0))
+        tmp = Q.W.T
+        tmp = np.array(sorted(tmp, key=lambda x: x[0]/x[1]))
+        Q.W = tmp.T
         return Q
+
+    def _GetSubset(self):
+        """
+        AWGN通信路のdegradingに必要なyの部分集合を返すメソッド\n
+        戻り値: yの部分集合の開始と終了位置を要素に持つリストをmu//2個まとめたリスト
+        """
+        y_max = 4               #yの最大値（ほんとは無限大）
+        Division_num = 1000      #n,n+1間の分割数（ほんとは連続してる）
+        y_range = [(1/Division_num)*i for i in range(y_max *  Division_num + 1)]    #yの値を保持するリスト（ほんとのyは連続）
+        lambda_ = [np.exp(2*y/self.variance) for y in y_range]                      #各yに対する尤度比λ
+        def C(x): return 1-(x/(x+1))*np.log2(1+1/x) - (1/(x+1))*np.log2(x+1)
+        Capacity = [C(lam) for lam in lambda_]      #各λに対するC 
+        data = dict(zip(Capacity, y_range))
+
+        # 確認用 C[λ]のプロット
+        # plt.plot(y_range, Capacity)
+        # plt.yticks(np.arange(0, 1+0.01, 0.25))
+        plt.show()
+        nu = self.mu//2
+        Separator_C = [i/nu for i in range(nu + 1)] #C[λ]の区切り位置
+
+        #A_iを構成するyの区切りを習得
+        Separator_y = [None]*(nu+1)
+        Separator_y[0] = 0
+        for i in range(1, nu+1):
+            c = self._getNearestValue(Capacity, Separator_C[i])
+            Separator_y[i] = data[c]
+        # print(Separator_y)
+
+        A_i = [None]*(nu)
+        for i in range(nu):
+            A_i[i] = [Separator_y[i], Separator_y[i+1]]
+        
+        return A_i
+
+    def _getNearestValue(self, list_, num):
+        """
+        リストからある値に最も近い値を返却する関数\n
+        list_: データ配列\n
+        num: 対象値\n
+        戻り値: 対象地に最も近いデータ配列内の値
+        """
+        # リスト要素と対象値の差分を計算し最小値のインデックスを取得
+        idx = np.abs(np.asarray(list_) - num).argmin()
+        return list_[idx]
+
 
 
 if __name__ == "__main__":
-    a = degrading_merge_AWGN(1, 0.5, 8)
-    a._GetSubset()
+    def getSymmetricChannelCapacity(channel):
+        if type(channel) != BMSchannel:
+            raise TypeError("Use BMSchannel")
+        I = 0
+        for x in [0, 1]:
+            for y in range(channel.N):
+                I += channel.W[x][y] * np.log2(channel.W[x][y]/(channel.W[0][y]+channel.W[1][y]))
+        I = 1+0.5*I
+        return I
+
+    a = degrading_merge_AWGN(1, 0.5, 1024)
+    Q = a.merge()
+    
+    print(Q.N)
+    I_W = getSymmetricChannelCapacity(Q)
+    print(I_W)
+
