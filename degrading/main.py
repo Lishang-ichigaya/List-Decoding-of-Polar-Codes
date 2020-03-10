@@ -4,7 +4,7 @@ import degrading
 from multiprocessing import Pool
 
 
-N = 64
+N = 256
 M = int(np.log2(N))
 mu = 8
 parallelnum = 4
@@ -12,9 +12,9 @@ parallelnum = 4
 # p = 0.03
 # W_0 = [[1-p, p],[p, 1-p]]
 # filename = "sort_I_"+str(M)+"_"+str(p)+".dat"
-snr = 2
+snr = 5
 R = 1/2
-filename = "sort_I_AWGN_"+str(R)+"_"+str(snr)+".dat"
+filename = "sort_I_AWGN_"+str(M)+"_"+str(R)+"_"+str(snr)+"_"+".dat"
 
 def getSymmetricChannelCapacity(channel):
     if type(channel) != BMSchannel:
@@ -29,7 +29,8 @@ def getSymmetricChannelCapacity(channel):
 def getDegradingChannelCapacity(i):
         b = bin(i)[2:]
         b = b.zfill(M)
-        Q_awgn = degrading.degrading_merge_AWGN(snr, R, 8)
+        # Q = BMSchannel(W_0, 2)
+        Q_awgn = degrading.degrading_merge_AWGN(snr, R, 128)
         Q = Q_awgn.merge()
 
         for j in range(M):
@@ -42,8 +43,6 @@ def getDegradingChannelCapacity(i):
         
         I = getSymmetricChannelCapacity(Q)
         return I
-
-
 
 if __name__ == "__main__":
     p = Pool(parallelnum)

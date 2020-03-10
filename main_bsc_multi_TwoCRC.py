@@ -19,8 +19,8 @@ np.set_printoptions(linewidth=100)
 #from Decoder import ListDecoder
 
 
-k = 256
-N = 512
+k = 682
+N = 1024
 r = 12  # CRCの長さ
 P = 0.09  
 kaisu = 1680 
@@ -90,7 +90,7 @@ def Simulation_wrapper(num):
         frameerrorsum += result[0]
         biterrorsum += result[1]
         if SaveLog:
-            if i%100 == 0:
+            if i%10 == 0:
                 with open(result_file_name+".log", mode="a", encoding="utf-8") as log:
                     log.write(str(num)+","+str(frameerrorsum)+","+str(i)+"\n")
 

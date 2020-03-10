@@ -61,7 +61,7 @@ class ListDecoder_F:
         tmp_W = np.full((2 * self.L), Decimal("-1.0"))
         tmp_matrixP = np.full((self.L, self.N,  int(np.log2(self.N))+1, 2), Decimal("-1.0"))
         tmp_activePath = [False] * (2 * self.L)
-        if self.chaneltype == "BSC":
+        if self.chaneltype == "AWGN" or self.chaneltype == "BSC":
             for i in range(self.N):
                 # print("--------------------"+str(i)+"--------------------")
                 if i == informationindex[j]:
@@ -143,7 +143,7 @@ class ListDecoder_F:
         P: 誤り確率
         """
         self.DecodeOutput(P)
-        if self.checker == True:
+        if self.checker:
             print("SCLメッセージ？推定値:\t", self.hat_message_prime)
 
         informationindex = np.sort(GetInformationIndex(self.K, self.path)[:self.K])

@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.random import rand
+from numpy.random import normal
 import time
 from message import Message
 
@@ -30,6 +31,22 @@ class BEC:
         output = self.input
         output[np.where(self.e > noise)] = 3
         self.output = output
+
+class AWGN:
+    def __init__(self, snr, R):
+        self.variance = 10**(-snr/10)/(2*R)
+        self.input = np.array([], dtype=np.uint8)
+        self.output = np.array([], dtype=np.uint8)
+    
+    def Transmission(self):
+        n = np.size(self.input)
+        chanel_input = np.array([+1.0 if n_i == 0 else -1.0 for n_i in self.input])
+        gauss_nose = normal(0, np.sqrt(self.variance), n)
+        chanel_output = chanel_input + gauss_nose
+        self.output = chanel_output
+        return chanel_output
+
+
 
 
 if __name__ == "__main__":

@@ -19,13 +19,13 @@ np.set_printoptions(linewidth=100)
 #from Decoder import ListDecoder
 
 
-k = 512
+k = 682
 N = 1024
 r = 12  # CRCの長さ
-P = 0.07   
+P = 0.06   
 kaisu = 300  
 parallelnum = 3
-L = 4
+L = 24
 K = k + r
 threshold = 0  # CRCの区切り位置
 SaveResult = False
@@ -70,7 +70,7 @@ def Simulation(i):
     error1 = np.bitwise_xor(message.message, hat_message)
     biterror = np.count_nonzero(error1)
     frameerror = 0 if biterror == 0 else 1
-    if i % 20 == 0:
+    if i % 10 == 0:
         print(i, "/", kaisu//parallelnum, ",", frameerror)
 
     return [frameerror, biterror]

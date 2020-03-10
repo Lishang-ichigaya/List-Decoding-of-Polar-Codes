@@ -73,7 +73,7 @@ def Simulation(i):
     error1 = np.bitwise_xor(message.message, hat_message)
     biterror = np.count_nonzero(error1)
     frameerror = 0 if biterror == 0 else 1
-    if i % 20 == 0:
+    if i %10 == 0:
         print(i, "/", kaisu//parallelnum, ",", frameerror)
 
     return [frameerror, biterror]
