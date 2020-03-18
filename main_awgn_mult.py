@@ -1,6 +1,7 @@
 # from CRC import CRC_Detector
 # from CRC import CRC_Encoder
 from Decoder import ListDecoder_F
+from Decoder import DecoderLR
 from chanel import AWGN
 from Encoder import Encoder
 from message import Message
@@ -15,8 +16,8 @@ N = 256
 L = 1
 r = 0  # CRCの長さ
 snr = 1
-kaisu = 1240
-parallelnum = 24 
+kaisu = 400
+parallelnum = 4 
 
 R = k/N
 P = norm.cdf(0, 1, np.sqrt(10**(-snr/10)/(2*R)))
@@ -57,7 +58,8 @@ def Simulation(i):
 
     # ポーラ符号復号化
     bpsk_decode = np.array([0 if y >0 else 1 for y in output])
-    decoder1 = ListDecoder_F(k, N, L, bpsk_decode, chaneltype, path, False)
+    # decoder1 = ListDecoder_F(k, N, L, bpsk_decode, chaneltype, path, False)
+    decoder1 = DecoderLR(k, N, bpsk_decode, chaneltype, path, False)
 
     decoder1.DecodeMessage(P)
     decoded_message = decoder1.hat_message

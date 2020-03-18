@@ -2,19 +2,23 @@ import numpy as np
 from BMSchannel import BMSchannel
 import degrading
 from multiprocessing import Pool
-
+import notification
+import copy
 
 N = 256
 M = int(np.log2(N))
-mu = 8
-parallelnum = 4
+mu = 32
+parallelnum = 48
 
 # p = 0.03
 # W_0 = [[1-p, p],[p, 1-p]]
 # filename = "sort_I_"+str(M)+"_"+str(p)+".dat"
-snr = 5
+snr = 1
 R = 1/2
 filename = "sort_I_AWGN_"+str(M)+"_"+str(R)+"_"+str(snr)+"_"+".dat"
+
+awgn_deg = degrading.degrading_merge_AWGN(snr, R, 128)
+Q_AWGN = awgn_deg.merge()
 
 def getSymmetricChannelCapacity(channel):
     if type(channel) != BMSchannel:
@@ -30,8 +34,7 @@ def getDegradingChannelCapacity(i):
         b = bin(i)[2:]
         b = b.zfill(M)
         # Q = BMSchannel(W_0, 2)
-        Q_awgn = degrading.degrading_merge_AWGN(snr, R, 128)
-        Q = Q_awgn.merge()
+        Q = copy.deepcopy(Q_AWGN)
 
         for j in range(M):
             if b[j] == '0':
@@ -62,6 +65,11 @@ if __name__ == "__main__":
     with open(filename, mode='a', encoding='utf-8') as f:
         for i in range(N):
             f.write(str(sorted_index[i])+" ")
+
+    try:
+        notification.Notice()
+    except Exception as e:
+        print(e)
 
     
 

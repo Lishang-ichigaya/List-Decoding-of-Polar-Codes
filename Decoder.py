@@ -590,7 +590,7 @@ class DecoderLR:
         # 事後確率の値を格納する配列
         j = 0
         for i in range(self.N):
-            if self.chaneltype == "BSC":
+            if self.chaneltype=="AWGN" or self.chaneltype == "BSC":
                 LR = CalculateLR_BSC(
                     P, self.N, self.chaneloutput, i, estimatedcodeword, matrixP, 0)
             elif self.chaneltype == "BEC":

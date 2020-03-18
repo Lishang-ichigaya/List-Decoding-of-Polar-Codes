@@ -1,36 +1,29 @@
 import numpy as np
 import time
 from multiprocessing import Pool
+from numpy.random import rand
+from scipy.stats import norm
 
-def Longtime(i):
-    time.sleep(1)
-    print(i)
+from chanel import AWGN
 
-def Fib(n):
-    if n == 0:
-        return 0
-    elif n == 1:
-        return 1
-    else:
-        return Fib(n-1) + Fib(n-2)
-
-def Fib_wrapper(num):
-    x = 0
-    for i in range(num):
-        x += Fib(i)
-    return [x, x]
 if __name__ == "__main__":
-    p = Pool(4)
-    st = time.time()
-    res = p.imap_unordered(Fib_wrapper, range(4))
-    ed = time.time()
-    for i in res:
-        print(str(i)+", ")
-    # st = time.time()
-    # for i in range(35):
-    #     Fib(i)
-    # ed = time.time()
-    print(ed-st)
-    p.close()
+    K = 300000
+    snr = 3
+    R = 0.5
+
+    tmprand = rand(K)
+    message = np.zeros([K], dtype=np.uint8)
+    message[np.where(0.5 > tmprand)] = 1
+
+    channel = AWGN(snr, R)
+    channel.input = message
+    output = channel.Transmission()
+    bpsk_decode = np.array([0 if y >0 else 1 for y in output])
+
+    error = np.bitwise_xor(message, bpsk_decode)
+    print(np.count_nonzero(error)/K, norm.cdf(0, 1, np.sqrt(10**(-snr/10)/(2*R))))
+
+
+
 
 
