@@ -1,7 +1,6 @@
 # from CRC import CRC_Detector
 # from CRC import CRC_Encoder
-from Decoder import ListDecoder_F
-from Decoder import DecoderLR
+from Decoder_awgn import ListDecoder
 from chanel import AWGN
 from Encoder import Encoder
 from message import Message
@@ -9,14 +8,16 @@ from multiprocessing import Pool
 import numpy as np
 from scipy.stats import norm
 import time
-np.set_printoptions(linewidth=100)
+import sys
+sys.path.append("/Users/kurosu/Documents/MyPyLibrary")
+import notification
 
 k = 128
 N = 256
 L = 1
 r = 0  # CRCの長さ
-snr = 1
-kaisu = 400
+snr = 2
+kaisu = 40
 parallelnum = 4 
 
 R = k/N
@@ -57,11 +58,8 @@ def Simulation(i):
     output = awgn.output
 
     # ポーラ符号復号化
-    bpsk_decode = np.array([0 if y >0 else 1 for y in output])
-    # decoder1 = ListDecoder_F(k, N, L, bpsk_decode, chaneltype, path, False)
-    decoder1 = DecoderLR(k, N, bpsk_decode, chaneltype, path, False)
-
-    decoder1.DecodeMessage(P)
+    decoder1 = ListDecoder(k, N, L, output, chaneltype, path, False)
+    decoder1.DecodeMessage(snr, R)
     decoded_message = decoder1.hat_message
 
     # # メッセージの取り出し
@@ -127,3 +125,8 @@ if __name__ == '__main__':
     print("FER_" + decodername + ": " + str(frameerrorcout/kaisu))
     print("BER_" + decodername + ": " + str(biteroorcount/(k*kaisu)))
     print("実行時間: " + str(end-start))
+
+    try:
+        notification.LineNoticeTermination()
+    except:
+        pass

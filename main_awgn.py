@@ -48,7 +48,6 @@ if __name__ == '__main__':
     print("通信路出力:\t\t", output)
 
     decoder1 = ListDecoder(k, N, L, output, chaneltype, path, False)
-    variance = 10**(-snr/10)/(2*R)
     decoder1.DecodeMessage(snr, R)
     decoded_message = decoder1.hat_message
     print("SCLメッセージ推定値:\t", decoded_message)
