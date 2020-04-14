@@ -1,5 +1,3 @@
-# from CRC import CRC_Detector
-# from CRC import CRC_Encoder
 from Decoder_awgn import ListDecoder
 from chanel import AWGN
 from Encoder import Encoder
@@ -9,7 +7,7 @@ import numpy as np
 from scipy.stats import norm
 import time
 import sys
-sys.path.append("/Users/kurosu/Documents/MyPyLibrary")
+sys.path.append("/Users/pikac/Documents/MyPyLibrary")
 import notification
 
 k = 128
@@ -129,4 +127,4 @@ if __name__ == '__main__':
     try:
         notification.LineNoticeTermination()
     except:
-        pass
+        print("notification error")
