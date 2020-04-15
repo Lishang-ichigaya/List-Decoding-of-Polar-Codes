@@ -4,14 +4,20 @@ import numpy as np
 
 class Encoder:
     def __init__(self, k, n, path):
+        """
+        メッセージを符号化するクラス。\n
+        k: メッセージ長\n
+        n: 符号長\n
+        path: インデックスを相互情報量が小さい順に並べたファイルのパス
+        """
         self.k = k
         self.n = n
         self.path = path
     
     def Encode(self,message):
         """
-        与えられたメッセージを符号化するクラス\n
-        message: 符号化したいメッセージ
+        メッセージを符号化するメソッド\n
+        message: 符号化したいメッセージ\n
         戻り値: 符号語
         """
         informationindex = self._GetInformationIndex()
