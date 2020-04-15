@@ -1,126 +1,92 @@
+# -*- coding: utf-8 -*-
 import numpy as np
-import time
+
 
 class Encoder:
-    def __init__(self, K, N, message, path, checker=True):
+    def __init__(self, k, n, path):
         """
-        エンコーダクラスの初期化\n
-        K:メッセージ長\n
-        N:符号長\n
-        message: 0,1のメッセージ\n
-        path: 相互情報量の小さい順にインデックスを並べたファイルのパス\n
-        checker: メッセージもどきを表示するか否か\n
+        メッセージを符号化するクラス。\n
+        k: メッセージ長\n
+        n: 符号長\n
+        path: インデックスを相互情報量が小さい順に並べたファイルのパス
         """
-        self.K = K
-        self.message = message
-        self.N = N
-        self.message_prime = np.zeros(N, dtype=np.uint8)
-        self.codeword = np.zeros(N, dtype=np.uint8)
+        self.k = k
+        self.n = n
         self.path = path
-        self.checker = checker
+    
+    def Encode(self,message):
+        """
+        メッセージを符号化するメソッド\n
+        message: 符号化したいメッセージ\n
+        戻り値: 符号語
+        """
+        informationindex = self._GetInformationIndex()
+        middle_message = np.zeros([self.n], dtype=np.uint8)
+        middle_message[informationindex] = message #中間メッセージの作成
 
-    def MakeCodeworde(self):
-        informationindex = GetInformationIndex(self.K, self.path)
-        self.message_prime = np.zeros([self.N], dtype=np.uint8)
-        self.message_prime[informationindex] = self.message
-        if self.checker == True:
-            print("メッセージもどき： \t", self.message_prime)
-        #↓の処理がそこそこ重いけど、numpyだしもう高速化はむり？
-        self.codeword = np.dot(self.message_prime, GetGeneratorMatrix(self.N)) % 2
-        self.codeword = self.codeword.A1
-    def GetMessagePrime(self):
-        return self.message_prime
+        codeword = np.dot(middle_message, self._GetGeneratorMatrix()) % 2
+        # codeword = codeword.A1
+        return codeword
 
+    def _GetInformationIndex(self):
+        """
+        情報ビットに対応するインデックス集合（情報インデックス）を得るメソッド
+        戻り値: 情報インデックス
+        """
+        informationindex = np.loadtxt(self.path, dtype=np.uint16)
+        # N = 65536 までは耐えられるようにunit16を使う
+        # unit8 だとN=256までしか使えない
+        informationindex = np.flip(informationindex)
+        # 相互情報量の小さい順に、インデックスを並べ替えたものを外部で用意しておく
+        return np.sort(informationindex[:self.k])
 
-class InterleavedEncoder(Encoder):
-    def __init__(self, k, N, r, message, parity, path, checker=True):
-        super().__init__(k, N, message, path, checker)
-        #self.K = k + r
-        #self.message = np.concatenate([message, parity])
-        self.r = r              #CRC等の長さ
-        self.parity = parity    #誤り検出や訂正を行うビット
+    def _GetGeneratorMatrix(self):
+        """
+        ポーラ符号の生成行列を作成するメソッド\n
+        戻り値: 生成行列G_n
+        """
+        m = int(np.log2(self.n))
+        matrixF = np.array([[1, 0], [1, 1]], dtype=np.uint8)
 
-    def MakeCodeworde(self):
-        informationindex = GetInformationIndex(self.K, self.path)
-        paritybitindex = GetParitybitIndex(self.K, self.r, self.path)
-        self.message_prime = np.zeros([self.N], dtype=np.uint8)
-        self.message_prime[informationindex] = self.message
-        self.message_prime[paritybitindex] = self.parity
-        if self.checker == True:
-            print("メッセージもどき： \t", self.message_prime)
-        self.codeword = np.dot(self.message_prime, GetGeneratorMatrix(self.N)) % 2
-        self.codeword = self.codeword.A1
+        matrixG = matrixF
+        for i in range(1, m):
+            tmp = matrixG
+            matrixG = np.dot(
+                self._BuildPermutationMatrix(i+1),
+                np.kron(matrixF, tmp)
+            )
+        return matrixG
 
-def GetGeneratorMatrix(N):
-    """
-    ポーラ符号の生成行列を作成
-    M: 符号長N
-    """
-    M = int(np.log2(N))
+    def _BuildPermutationMatrix(self, m):
+        """
+        偶数番目を前に、奇数番目を後ろに置き換える行列を得るメソッド\n
+        戻り値: 並べ替え行列B_n\n
+        例:\n
+        [1,0,0,0]  [1,0,0,0]\n
+        [0,1,0,0]->[0,0,1,0]\n
+        [0,0,1,0]  [0,1,0,0]\n
+        [0,0,0,1]  [0,0,0,1]
+        """
+        if m == 1:
+            matrixR = np.identity(1, dtype=np.uint8)
+        else:
+            matrixI_2 = np.identity(2, dtype=np.uint8)
+            matrixR = np.identity(2, dtype=np.uint8)
+            for _ in range(m-1):
+                matrixR = np.kron(matrixI_2, matrixR)
+            matrixEven = matrixR[::2]
+            matrixOdd = matrixR[1::2]
+            matrixR = np.concatenate([matrixEven, matrixOdd]).T
+        return matrixR
 
-    matrixF = np.array([[1, 0], [1, 1]], dtype=np.uint8)
-
-    matrixG = matrixF
-    for i in range(1, M):
-        tmp = matrixG
-        matrixG = np.dot(
-            GetPermutationMatrix(i+1),
-            np.kron(matrixF, tmp)
-        )
-    return matrixG
-
-def GetPermutationMatrix(M):
-    """
-    偶数番目を前に、奇数番目を後ろに置き換える行列を得る\n
-    M: 符号長Nについて、N=2^Mを満たすM\n\n
-    例:\n
-    [1,0,0,0]  [1,0,0,0]\n
-    [0,1,0,0]->[0,0,1,0]\n
-    [0,0,1,0]  [0,1,0,0]\n
-    [0,0,0,1]  [0,0,0,1]
-    """
-    if M == 1:
-        return np.identity(1, dtype=np.uint8)
-    matrixI_2 = np.matrix([[1, 0], [0, 1]])
-    matrixR = np.matrix([[1, 0], [0, 1]])
-    for i in range(M-1):
-        matrixR = np.kron(matrixI_2, matrixR)
-    matrixEven, matrixOdd = matrixR[::2], matrixR[1::2]
-    matrixR = np.concatenate([matrixEven, matrixOdd]).T
-    return matrixR
-
-def GetInformationIndex(K, path):
-    """
-    情報ビットに対応するインデックス集合を得る
-    K:メッセージの長さ
-    """
-    informationindex = np.loadtxt(path, dtype=np.uint16)
-    #print(informationindex)
-    # N = 65536 までは耐えられるようにunit16を使う
-    # unit8 だとN=256までしか使えない
-    informationindex = np.flip(informationindex)
-    # 相互情報量の小さい順に、インデックスを並べ替えたものを外部で用意しておく
-    return np.sort(informationindex[:K])
-
-def GetParitybitIndex(K, r, path):
-    """
-    信頼性が比較的低いインデックス集合を得る。パリティビットに使用するかも
-    K:メッセージの長さ
-    r:パリティビットの長さ
-    """
-    paritybitindex = np.loadtxt(path, dtype=np.uint16)
-    paritybitindex = np.flip(paritybitindex)
-    return np.sort(paritybitindex[K:K+r])
 
 if __name__ == "__main__":
-    K = 4
-    N = 8
-    #path = "./sort_I/sort_I_2_0.11_20.dat"
-    path = "./sort_I/sortI_BEC_0.5_8.dat"
-    message = np.array([1, 1, 1, 1])
-    encoder0 = Encoder(K, N, message, path)
-    encoder0.MakeCodeworde()
-
-    print(encoder0.message)
-    print(GetGeneratorMatrix(N))
-    print(encoder0.codeword)
+    chaneltype = "AWGN"
+    M = 8
+    R = 0.5
+    snr = 2
+    path = "./sort_I/"+chaneltype+"/sort_I_"+chaneltype+"_"+str(M)+"_"+str(R)+"_"+str(snr)+"_.dat"
+    a = Encoder(128, 256, path)
+    message = np.full(128, 1)
+    b = a.Encode(message)
+    print(b)

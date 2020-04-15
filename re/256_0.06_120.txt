@@ -1,5 +1,0 @@
-K=128, N=256, r=6, threshold=48, L=4, P=0.06
-回数: 120, 送信メッセージ数: 15360, UnfairTwoCRC-SCL, フレームエラー数2, ビットエラー数: 42
-FER_UnfairTwoCRC-SCL: 0.016666666666666666
-BER_UnfairTwoCRC-SCL: 0.002734375
-実行時間: 42.24928069114685
