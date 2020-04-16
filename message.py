@@ -3,7 +3,7 @@ import numpy as np
 from numpy.random import rand
 
 
-class Message:
+class MessageMaker:
     def __init__(self, K, p=0.5):
         """
         メッセージを作成するパラメータを初期化する。\n 
