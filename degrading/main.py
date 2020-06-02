@@ -2,22 +2,22 @@ import numpy as np
 from BMSchannel import BMSchannel
 import degrading
 from multiprocessing import Pool
-import notification
 import copy
+import sys
+sys.path.append('C:\\Users\\pikac\\Documents\\MyPyLibrary')
+import notification
 
-N = 256
+N = 64
 M = int(np.log2(N))
-mu = 32
-parallelnum = 48
+mu = 16
+mu_awgn = 128
+parallelnum = 12
 
-# p = 0.03
-# W_0 = [[1-p, p],[p, 1-p]]
-# filename = "sort_I_"+str(M)+"_"+str(p)+".dat"
 snr = 1
 R = 1/2
-filename = "sort_I_AWGN_"+str(M)+"_"+str(R)+"_"+str(snr)+"_"+".dat"
+filename = "./sort_I/sort_I_AWGN_"+str(M)+"_"+str(R)+"_"+str(snr)+"_"+".dat"
 
-awgn_deg = degrading.degrading_merge_AWGN(snr, R, 128)
+awgn_deg = degrading.degrading_merge_AWGN(snr, R, mu_awgn)
 Q_AWGN = awgn_deg.merge()
 
 def getSymmetricChannelCapacity(channel):
@@ -50,10 +50,12 @@ def getDegradingChannelCapacity(i):
 if __name__ == "__main__":
     p = Pool(parallelnum)
     I_W = []
+    sum_I = 0
     I_W_iterator = p.imap(getDegradingChannelCapacity, range(N))
     for I in I_W_iterator:
         print(I)
         I_W.append(I)
+        sum_I += I
     p.close()
     # for i in range(N):
     #     I = getDegradingChannelCapacity(i)
@@ -66,8 +68,10 @@ if __name__ == "__main__":
         for i in range(N):
             f.write(str(sorted_index[i])+" ")
 
+    print(sum_I-N*getSymmetricChannelCapacity(Q_AWGN))
+
     try:
-        notification.Notice()
+        notification.NoticeEnd("差分:"+str(sum_I-N*getSymmetricChannelCapacity(Q_AWGN)))
     except Exception as e:
         print(e)
 

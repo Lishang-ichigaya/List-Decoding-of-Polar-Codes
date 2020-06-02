@@ -2,6 +2,8 @@ import numpy as np
 from scipy.stats import norm
 from tkinter import messagebox
 import time
+import sys
+sys.path.append('C:\\Users\\pikac\\Documents\\MyPyLibrary')
 import notification
 
 def BinaryEntropy(p):
@@ -10,4 +12,5 @@ def BinaryEntropy(p):
 if __name__ == "__main__":
     # time.sleep(1)
     # messagebox.showinfo("end","おわり")
-    notification.Notice()
+    # print(sys.path)
+    notification.NoticeEnd()

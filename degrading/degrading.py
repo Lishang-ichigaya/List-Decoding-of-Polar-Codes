@@ -156,8 +156,8 @@ class degrading_merge_AWGN():
         AWGN通信路のdegradingに必要なyの部分集合を返すメソッド\n
         戻り値: yの部分集合の開始と終了位置を要素に持つリストをmu//2個まとめたリスト
         """
-        y_max = 4               #yの最大値（ほんとは無限大）
-        Division_num = 1000      #n,n+1間の分割数（ほんとは連続してる）
+        y_max = 6               #yの最大値（ほんとは無限大）
+        Division_num = 100000      #n,n+1間の分割数（ほんとは連続してる）
         y_range = [(1/Division_num)*i for i in range(y_max *  Division_num + 1)]    #yの値を保持するリスト（ほんとのyは連続）
         lambda_ = [np.exp(2*y/self.variance) for y in y_range]                      #各yに対する尤度比λ
         def C(x): return 1-(x/(x+1))*np.log2(1+1/x) - (1/(x+1))*np.log2(x+1)

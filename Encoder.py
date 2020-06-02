@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+import time
 
 
 class Encoder:
@@ -13,8 +14,8 @@ class Encoder:
         self.k = k
         self.n = n
         self.path = path
-    
-    def Encode(self,message):
+
+    def Encode(self, message):
         """
         メッセージを符号化するメソッド\n
         message: 符号化したいメッセージ\n
@@ -22,7 +23,7 @@ class Encoder:
         """
         informationindex = self._GetInformationIndex()
         middle_message = np.zeros([self.n], dtype=np.uint8)
-        middle_message[informationindex] = message #中間メッセージの作成
+        middle_message[informationindex] = message  # 中間メッセージの作成
 
         codeword = np.dot(middle_message, self._GetGeneratorMatrix()) % 2
         # codeword = codeword.A1
@@ -46,15 +47,18 @@ class Encoder:
         戻り値: 生成行列G_n
         """
         m = int(np.log2(self.n))
-        matrixF = np.array([[1, 0], [1, 1]], dtype=np.uint8)
 
-        matrixG = matrixF
-        for i in range(1, m):
-            tmp = matrixG
-            matrixG = np.dot(
-                self._BuildPermutationMatrix(i+1),
-                np.kron(matrixF, tmp)
-            )
+        # matrixF = np.array([[1, 0], [1, 1]], dtype=np.uint8)
+        # matrixG = matrixF
+        # for i in range(1, m):
+        #     tmp = matrixG
+        #     matrixG = np.dot(
+        #         self._BuildPermutationMatrix(i+1),
+        #         np.kron(matrixF, tmp)
+        #     )
+
+        matrixG = np.loadtxt("./G/G_"+str(m)+".txt", dtype=np.uint8)
+
         return matrixG
 
     def _BuildPermutationMatrix(self, m):
@@ -81,12 +85,27 @@ class Encoder:
 
 
 if __name__ == "__main__":
-    chaneltype = "AWGN"
-    M = 8
-    R = 0.5
-    snr = 2
-    path = "./sort_I/"+chaneltype+"/sort_I_"+chaneltype+"_"+str(M)+"_"+str(R)+"_"+str(snr)+"_.dat"
-    a = Encoder(128, 256, path)
-    message = np.full(128, 1)
-    b = a.Encode(message)
-    print(b)
+    # chaneltype = "AWGN"
+    # M = 8
+    # R = 0.5
+    # snr = 2
+    # path = "./sort_I/"+chaneltype+"/sort_I_"+chaneltype+"_"+str(M)+"_"+str(R)+"_"+str(snr)+"_.dat"
+    # a = Encoder(128, 256, path)
+    # message = np.full(128, 1)
+    # b = a.Encode(message)
+    # print(b)
+    n = 2048
+    k = n//2
+    enc = Encoder(k, n, "")
+    G = enc._GetGeneratorMatrix()
+    path_w = "G_"+str(int(np.log2(n)))+".txt"
+
+    s = time.time()
+    G_a = np.loadtxt(path_w, dtype=np.uint8)
+    e = time.time()
+    print("実行時間", e-s)
+
+    np.set_printoptions(threshold=np.inf)
+    np.set_printoptions(linewidth=np.inf)
+    # np.savetxt("G_"+str(int(np.log2(n)))+".txt", G,fmt="%d")
+    # print(G)

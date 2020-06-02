@@ -52,6 +52,8 @@ class SCL_Decoder:
                         l, lth_path, i, 0)
                     likehood_1appended = self._CalculateLikelihood(
                         l, lth_path, i, 1)
+                    # print(likehood_0appended)
+                    # print(likehood_1appended)
                     tmp_decoded_list.append(
                         [path_appended0, likehood_0appended])
                     tmp_decoded_list.append(
@@ -123,7 +125,7 @@ class SCL_Decoder:
                     W = norm.pdf(x=chaneloutput, loc=-1,
                                  scale=np.sqrt(self.N_0))
                 # matrixP[i + N * branch][M][u_i[0]] = W
-                return W
+                return W[0]*6
 
             # 以下再起的呼び出し
             y_1 = chaneloutput[:n//2]

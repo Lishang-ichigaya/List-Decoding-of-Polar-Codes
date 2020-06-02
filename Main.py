@@ -9,20 +9,20 @@ from Channel import AWGNchannel
 from SCLDecoder import SCL_Decoder
 from ErrorChecker import ErrorChecker
 
-k = 128
-n = 256
+k = 256
+n = 512
 L = 1
 # r = 0 
-snr = 3
-kaisu = 16*600
-parallel = 16 
+snr = 2
+kaisu = 10*10
+parallel = 10 
 
 R = k/n
 m = int(np.log2(n))
 # K = k + r
 
 chaneltype = "AWGN"
-filepath = "./sort_I/AWGN/sort_I_AWGN_"+str(m)+"_"+str(R)+"_"+str(snr)+"_.dat"
+filepath = "./sort_I/AWGN/sort_I_AWGN_"+str(m)+"_"+str(R)+"_"+"1"+"_.dat"
 
 def Simulation(i):
     # メッセージの作成
