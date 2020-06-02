@@ -7,13 +7,13 @@ from CRC import CRC_Encoder
 from Message import MessageMaker
 from Encoder import Encoder
 from Channel import AWGNchannel
-from SCLDecoder import CASCL_Decoder
+from SCLDecoder import SCL_Decoder
 from ErrorChecker import ErrorChecker
 
 k = 256
 n = 512
 L = 4
-r = 4 
+# r = 4 
 snr = 2
 kaisu = 14*50
 parallel = 14 
@@ -29,23 +29,20 @@ def Simulation(i):
     # メッセージの作成
     messagemaker = MessageMaker(k)
     message = messagemaker.Make()
-   
-    #CRC符号化
-    crc_encoder = CRC_Encoder(message, r)
-    crc_codeword = crc_encoder.Encode()
-    
+
     # ポーラ符号符号化
-    encoder = Encoder(k + r, n, filepath)
-    codeword = encoder.Encode(crc_codeword)
-    
+    polar_encoder = Encoder(k, n, filepath)
+    codeword = polar_encoder.Encode(message)
+
+
     # 通信路
     channel = AWGNchannel(snr, k, n)
     output = channel.Transmit(codeword)
-    
+
     # CRC aided SCL復号
-    decoder = CASCL_Decoder(k, n, L, r, snr, filepath)
+    decoder = SCL_Decoder(k, n, L, snr, filepath)
     estimated_message = decoder.Decode(output)
-    
+
     # フレームエラーの判定とビットエラー数の判定
     error = ErrorChecker.IsDecodeError(message, estimated_message)
 

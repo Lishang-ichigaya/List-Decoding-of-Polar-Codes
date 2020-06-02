@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from scipy.stats import norm
-
+from CRC import CRC_Detector
 
 class SCL_Decoder:
     def __init__(self, k, n, L, snr, path):
@@ -15,6 +15,7 @@ class SCL_Decoder:
         self.k = k
         self.n = n
         self.L = L
+        self.r = 0
         self.N_0 = 10**(-snr/10)/(2*(k/n))
         self.path = path
 
@@ -25,7 +26,7 @@ class SCL_Decoder:
 
     def Decode(self, channeloutput):
         """
-        受信系列を復号するメソッド\n
+        受信系列をSCL復号するメソッド\n
         channeloutput: AWGNチャネルからの受信系列
         """
         self.channeloutput = channeloutput
@@ -80,15 +81,15 @@ class SCL_Decoder:
         戻り値: 正しいと推定されるメッセージ
         """
         estimated_middlemessage = self.decoded_list[0]
-        return estimated_middlemessage
+        informationindex = self._GetInformationIndex()
+        estimated_message = estimated_middlemessage[informationindex]
+        return estimated_message
 
     def _GetMessage(self):
         """
         情報ビットと凍結ビットが含まれた中間メッセージからメッセージを抜き出すメソッド
         """
-        estimated_middlemessage = self._SelectTrueMessage()
-        informationindex = self._GetInformationIndex()
-        estimated_message = estimated_middlemessage[informationindex]
+        estimated_message = self._SelectTrueMessage()
         return estimated_message
 
     def _CalculateLikelihood(self, l, lth_path, i, u_i):
@@ -192,7 +193,33 @@ class SCL_Decoder:
         # unit8 だとN=256までしか使えない
         informationindex = np.flip(informationindex)
         # 相互情報量の小さい順に、インデックスを並べ替えたものを外部で用意しておく
-        return np.sort(informationindex[:self.k])
+        return np.sort(informationindex[:self.k + self.r])
+
+class CASCL_Decoder(SCL_Decoder):
+    def __init__(self, k, n, L, r, snr, path):
+        super().__init__(k, n, L, snr, path)
+        self.r = r
+
+    def _SelectTrueMessage(self):
+        """
+        中間メッセージの復号完了後に、L個のリスト中から最も正しいと推定されるメッセージを求めるメソッド\n
+        戻り値: 正しいと推定されるメッセージ
+        """
+        informationindex = self._GetInformationIndex()
+        is_nocrc = True
+        likelypath = self.decoded_list[0]
+
+        for lth_path in self.decoded_list:
+            message = lth_path[informationindex]
+            message = message[:self.k]
+            crc_detector = CRC_Detector(message, self.r)
+            if crc_detector.IsNoError():
+                likelypath = lth_path
+                break
+        
+        estimated_message = likelypath[informationindex]
+        estimated_message = estimated_message[:self.k]
+        return estimated_message
 
 
 if __name__ == "__main__":
