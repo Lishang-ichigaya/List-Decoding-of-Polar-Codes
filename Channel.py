@@ -18,3 +18,14 @@ class AWGNchannel:
         chanel_output = chanel_input + gauss_nose
         return chanel_output
 
+class BSC:
+    def __init__(self, p):
+        self.p = p
+    
+    def Transmit(self, _input):
+        n = np.size(_input)
+        noise = rand(n)
+        binnoise = np.zeros([n], dtype=np.uint8)
+        binnoise[np.where(self.p > noise)] = 1
+        output = (_input + binnoise) % 2
+        return output

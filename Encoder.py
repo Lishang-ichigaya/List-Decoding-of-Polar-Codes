@@ -24,6 +24,7 @@ class Encoder:
         informationindex = self._GetInformationIndex()
         middle_message = np.zeros([self.n], dtype=np.uint8)
         middle_message[informationindex] = message  # 中間メッセージの作成
+        # print("中間メッセージ:", middle_message)
 
         codeword = np.dot(middle_message, self._GetGeneratorMatrix()) % 2
         # codeword = codeword.A1

@@ -2,6 +2,8 @@
 import numpy as np
 from scipy.stats import norm
 from CRC import CRC_Detector
+import copy
+
 
 class SCL_Decoder:
     def __init__(self, k, n, L, snr, path):
@@ -41,6 +43,7 @@ class SCL_Decoder:
         """
         informationindex = self._GetInformationIndex()
         self.decoded_list = [np.array([], dtype=np.uint8)]
+        tmp_calculatedLikehood = copy.deepcopy(self.calculatedLikehood)
 
         for i in range(self.n):
             if i in informationindex:
@@ -49,24 +52,31 @@ class SCL_Decoder:
                 for lth_path in self.decoded_list:
                     path_appended0 = np.append(lth_path, 0)
                     path_appended1 = np.append(lth_path, 1)
-                    likehood_0appended = self._CalculateLikelihood(
-                        l, lth_path, i, 0)
-                    likehood_1appended = self._CalculateLikelihood(
-                        l, lth_path, i, 1)
+                    likehood_appended0 = self._CalculateLikelihood(
+                        l, lth_path, i, tmp_calculatedLikehood[l], 0)
+                    likehood_appended1 = self._CalculateLikelihood(
+                        l, lth_path, i, tmp_calculatedLikehood[l], 1)
+
                     # print(likehood_0appended)
                     # print(likehood_1appended)
+
                     tmp_decoded_list.append(
-                        [path_appended0, likehood_0appended])
+                        [path_appended0, likehood_appended0, tmp_calculatedLikehood[l]])
                     tmp_decoded_list.append(
-                        [path_appended1, likehood_1appended])
+                        [path_appended1, likehood_appended1, tmp_calculatedLikehood[l]])
                     l += 1
                 tmp_decoded_list = sorted(
                     tmp_decoded_list, key=lambda x: x[1], reverse=True)
 
                 if len(tmp_decoded_list) > self.L:
                     tmp_decoded_list = tmp_decoded_list[:self.L]
-                tmp_decoded_list = [x[0] for x in tmp_decoded_list]
-                self.decoded_list = tmp_decoded_list
+                self.decoded_list = [x[0] for x in tmp_decoded_list]
+                self.calculatedLikehood = np.array([x[2] for x in tmp_decoded_list])
+
+                # print([x[1] for x in tmp_decoded_list])
+                # print("-------------------------------")
+                # import time
+                # time.sleep(0.1)
 
             else:
                 l = 0
@@ -92,11 +102,12 @@ class SCL_Decoder:
         estimated_message = self._SelectTrueMessage()
         return estimated_message
 
-    def _CalculateLikelihood(self, l, lth_path, i, u_i):
+    def _CalculateLikelihood(self, l, lth_path, i, calculatedLikehood, u_i):
         """
         現在までの中間メッセージ推定値をもとに、次の値がu_iであるときの尤度を計算するメソッド\n
         l: リストのインデックス
         lth_path: l番目の現在までの中間メッセージ推定値のパス
+        calculatedLikehood: 計算済みの尤度を格納してある配列
         i: 尤度を計算するインデックス
         u_i: i番目の値(int)
         """
@@ -111,11 +122,11 @@ class SCL_Decoder:
             calculatedLikehood: 計算済みの尤度を保持する N*logN*2 の行列
             branch: Tal,Vardyの論文中に出てくるブランチ
             """
-
+            
             m = int(np.log2(n))
-            if calculatedLikehood[i + n * branch][m][u_i[0]] != -1.0:
+            if calculatedLikehood[i + n * branch][m][u_i] != -1.0:
                 # 計算済みのW
-                return calculatedLikehood[i + n * branch][m][u_i[0]]
+                return calculatedLikehood[i + n * branch][m][u_i]
 
             if m == 0:
                 # 再起の終了条件
@@ -125,8 +136,8 @@ class SCL_Decoder:
                 else:
                     W = norm.pdf(x=chaneloutput, loc=-1,
                                  scale=np.sqrt(self.N_0))
-                # matrixP[i + N * branch][M][u_i[0]] = W
-                return W[0]*6
+                calculatedLikehood[i + n * branch][m][u_i] = W[0]*12
+                return W[0]*12
 
             # 以下再起的呼び出し
             y_1 = chaneloutput[:n//2]
@@ -179,8 +190,9 @@ class SCL_Decoder:
         n = self.n
         u = self.decoded_list[l]
         u_i = np.array([u_i], dtype=np.uint8)
+        P = calculatedLikehood
 
-        likehood = W_awgn(n, y, i, u_i, u, self.calculatedLikehood[l], 0)
+        likehood = W_awgn(n, y, i, u_i, u, P, 0)
         return likehood
 
     def _GetInformationIndex(self):
@@ -195,6 +207,7 @@ class SCL_Decoder:
         # 相互情報量の小さい順に、インデックスを並べ替えたものを外部で用意しておく
         return np.sort(informationindex[:self.k + self.r])
 
+
 class CASCL_Decoder(SCL_Decoder):
     def __init__(self, k, n, L, r, snr, path):
         super().__init__(k, n, L, snr, path)
@@ -207,19 +220,230 @@ class CASCL_Decoder(SCL_Decoder):
         """
         informationindex = self._GetInformationIndex()
         is_nocrc = True
-        likelypath = self.decoded_list[0]
 
         for lth_path in self.decoded_list:
             message = lth_path[informationindex]
-            message = message[:self.k]
             crc_detector = CRC_Detector(message, self.r)
             if crc_detector.IsNoError():
+                is_nocrc = False
                 likelypath = lth_path
                 break
-        
+        if is_nocrc:
+            likelypath = self.decoded_list[0]
+
         estimated_message = likelypath[informationindex]
         estimated_message = estimated_message[:self.k]
         return estimated_message
+
+
+class SCL_Decoder_BSC:
+    def __init__(self, k, n, L, p, path):
+        """
+        受信系列を復号するクラス\n
+        k: メッセージ長\n
+        n: 符号長\n
+        p: 反転確率\n
+        path: インデックスを相互情報量が小さい順に並べたファイルのパス
+        """
+        self.k = k
+        self.n = n
+        self.L = L
+        self.r = 0
+        self.p = p
+        self.path = path
+
+        self.channeloutput = None
+        self.decoded_list = None
+        self.calculatedLikehood = np.full(
+            (self.L, self.n,  int(np.log2(self.n))+1, 2), -1.0)
+
+    def Decode(self, channeloutput):
+        """
+        受信系列をSCL復号するメソッド\n
+        channeloutput: AWGNチャネルからの受信系列
+        """
+        self.channeloutput = channeloutput
+
+        self._DecodeMiddleMessage()
+        decoded_message = self._GetMessage()
+        return decoded_message
+
+    def _DecodeMiddleMessage(self):
+        """
+        情報ビットと凍結ビットが含まれた中間メッセージをL個復号するメソッド\n
+        """
+        informationindex = self._GetInformationIndex()
+        self.decoded_list = [np.array([], dtype=np.uint8)]
+
+        for i in range(self.n):
+            if i in informationindex:
+                l = 0
+                tmp_calculatedLikehood = copy.deepcopy(self.calculatedLikehood)
+                tmp_decoded_list = []  # 尤度と推定値を保持
+                for lth_path in self.decoded_list:
+                    path_appended0 = np.append(lth_path, 0)
+                    path_appended1 = np.append(lth_path, 1)
+                    # print(tmp_calculatedLikehood[l], "\n-------------------------------")
+                    likehood_appended0 = self._CalculateLikelihood(
+                        l, lth_path, i, tmp_calculatedLikehood[l], 0)
+                    # print(likehood_appended0)
+                    # print(tmp_calculatedLikehood[l], "\n-------------------------------")
+                    likehood_appended1 = self._CalculateLikelihood(
+                        l, lth_path, i, tmp_calculatedLikehood[l], 1)
+                    # print(likehood_appended1)
+                    # print(tmp_calculatedLikehood[l], "\n-------------------------------")
+
+                    # print(likehood_0appended)
+                    # print(likehood_1appended)
+
+                    tmp_decoded_list.append(
+                        [path_appended0, likehood_appended0, tmp_calculatedLikehood[l]])
+                    tmp_decoded_list.append(
+                        [path_appended1, likehood_appended1, tmp_calculatedLikehood[l]])
+                    l += 1
+                tmp_decoded_list = sorted(
+                    tmp_decoded_list, key=lambda x: x[1], reverse=True)
+
+                if len(tmp_decoded_list) > self.L:
+                    tmp_decoded_list = tmp_decoded_list[:self.L]
+                self.decoded_list = [x[0] for x in tmp_decoded_list]
+                self.calculatedLikehood = np.array([x[2] for x in tmp_decoded_list])
+
+                # print(tmp_decoded_list[0][2])
+                # print(self.calculatedLikehood)
+                # print("-------------------------------------")
+
+                # print([x[1] for x in tmp_decoded_list])
+                # print("-------------------------------")
+                # import time
+                # time.sleep(0.1)
+
+            else:
+                l = 0
+                for lth_path in self.decoded_list:
+                    lth_path = np.append(lth_path, 0)
+                    self.decoded_list[l] = lth_path
+                    l += 1
+
+    def _SelectTrueMessage(self):
+        """
+        中間メッセージの復号完了後に、L個のリスト中から最も正しいと推定されるメッセージを求めるメソッド\n
+        戻り値: 正しいと推定されるメッセージ
+        """
+        estimated_middlemessage = self.decoded_list[0]
+        informationindex = self._GetInformationIndex()
+        estimated_message = estimated_middlemessage[informationindex]
+        return estimated_message
+
+    def _GetMessage(self):
+        """
+        情報ビットと凍結ビットが含まれた中間メッセージからメッセージを抜き出すメソッド
+        """
+        estimated_message = self._SelectTrueMessage()
+        return estimated_message
+
+    def _CalculateLikelihood(self, l, lth_path, i, calculatedLikehood, u_i):
+        """
+        現在までの中間メッセージ推定値をもとに、次の値がu_iであるときの尤度を計算するメソッド\n
+        l: リストのインデックス
+        lth_path: l番目の現在までの中間メッセージ推定値のパス
+        calculatedLikehood: 計算済みの尤度を格納してある配列
+        i: 尤度を計算するインデックス
+        u_i: i番目の値(int)
+        """
+        def W_awgn(n, chaneloutput, i, u_i, estimatedcodeword_u, calculatedLikehood, branch):
+            """
+            入力がu_iであるときの事後確率W(y^n,u^i-1|u_i)を計算する\n
+            n: 符号長\n
+            chaneloutpuy: 通信路出力\n
+            i: 推定したいビットのインデックス\n
+            u_i: 0か1
+            estimatedcodeword_u: 現在までに推定された符号語ビット列
+            calculatedLikehood: 計算済みの尤度を保持する N*logN*2 の行列
+            branch: Tal,Vardyの論文中に出てくるブランチ
+            """
+
+            m = int(np.log2(n))
+            if calculatedLikehood[i + n * branch][m][u_i[0]] != -1.0:
+                # 計算済みのW
+                return calculatedLikehood[i + n * branch][m][u_i[0]]
+
+            if m == 0:
+                # 再起の終了条件
+                if u_i == 0:
+                    W = 1-self.p if chaneloutput == np.array([0]) else self.p
+                else:
+                    W = self.p if chaneloutput == np.array([0]) else 1-self.p
+                calculatedLikehood[i + n * branch][m][u_i[0]] = W
+                return W
+
+            # 以下再起的呼び出し
+            y_1 = chaneloutput[:n//2]
+            y_2 = chaneloutput[n//2:]
+
+            if i > 1:
+                # uが存在するときの操作
+                hat_u_i_minus_1 = estimatedcodeword_u[i-1]
+
+                j = i if i % 2 == 0 else i-1
+                # ⇔ j-1 = i-1 or i-2
+                estimatedcodeword_u = estimatedcodeword_u[:j]
+
+                # 偶数と奇数に分解
+                hat_u1 = estimatedcodeword_u[::2]
+                hat_u2 = estimatedcodeword_u[1::2]
+
+                # 偶奇でxor、奇数はそのまま
+                hat_u1 = hat_u1 ^ hat_u2
+                hat_u2 = hat_u2
+            else:
+                # uが存在しないときのそうさ
+                # ⇔ i<=1
+                if i == 1:
+                    hat_u_i_minus_1 = estimatedcodeword_u[0]
+                j = 0
+                hat_u1 = np.array([], dtype=np.uint8)
+                hat_u2 = np.array([], dtype=np.uint8)
+
+            # Arikanが提案した再起式に従って、再帰的に計算。
+            if i % 2 == 0:
+                # u_i+1が0と1の場合について和をとる
+                u_i_puls_1 = np.array([0], dtype=np.uint8)
+                W_1 = (0.5
+                       * W_awgn(n//2, y_1, j//2, u_i ^ u_i_puls_1, hat_u1, calculatedLikehood, 2*branch)
+                       * W_awgn(n//2, y_2, j//2, u_i_puls_1, hat_u2, calculatedLikehood, 2*branch+1))
+                u_i_puls_1 = np.array([1], dtype=np.uint8)
+                W_2 = (0.5
+                       * W_awgn(n//2, y_1, j//2, u_i ^ u_i_puls_1, hat_u1, calculatedLikehood, 2*branch)
+                       * W_awgn(n//2, y_2, j//2, u_i_puls_1, hat_u2, calculatedLikehood, 2*branch+1))
+                W = W_1 + W_2
+            else:
+                W = (0.5
+                     * W_awgn(n//2, y_1, j//2, hat_u_i_minus_1 ^ u_i, hat_u1, calculatedLikehood, 2*branch)
+                     * W_awgn(n//2, y_2, j//2, u_i, hat_u2, calculatedLikehood, 2*branch+1))
+            calculatedLikehood[i + n * branch][m][u_i[0]] = W
+            return W
+
+        y = self.channeloutput
+        n = self.n
+        u = self.decoded_list[l]
+        u_i = np.array([u_i], dtype=np.uint8)
+        P = calculatedLikehood
+
+        likehood = W_awgn(n, y, i, u_i, u, P, 0)
+        return likehood
+
+    def _GetInformationIndex(self):
+        """
+        情報ビットに対応するインデックス集合（情報インデックス）を得るメソッド
+        戻り値: 情報インデックス
+        """
+        informationindex = np.loadtxt(self.path, dtype=np.uint16)
+        # N = 65536 までは耐えられるようにunit16を使う
+        # unit8 だとN=256までしか使えない
+        informationindex = np.flip(informationindex)
+        # 相互情報量の小さい順に、インデックスを並べ替えたものを外部で用意しておく
+        return np.sort(informationindex[:self.k + self.r])
 
 
 if __name__ == "__main__":

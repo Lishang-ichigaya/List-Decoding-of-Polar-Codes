@@ -9,14 +9,14 @@ from Encoder import Encoder
 from Channel import AWGNchannel
 from SCLDecoder import SCL_Decoder
 from ErrorChecker import ErrorChecker
+import parameter
 
-k = 256
-n = 512
-L = 4
-# r = 4 
-snr = 2
-kaisu = 14*50
-parallel = 14 
+k = parameter.k
+n = parameter.n
+L = parameter.L
+snr = parameter.snr
+kaisu = parameter.kaisu
+parallel = parameter.parallel
 
 R = k/n
 m = int(np.log2(n))
@@ -46,7 +46,7 @@ def Simulation(i):
     # フレームエラーの判定とビットエラー数の判定
     error = ErrorChecker.IsDecodeError(message, estimated_message)
 
-    # if i % 20 == 0:
+    # if i % 10 == 0:
     #     print(i, "/", kaisu//parallel, ",", error)
     return error
 

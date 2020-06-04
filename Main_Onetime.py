@@ -10,9 +10,9 @@ from Channel import AWGNchannel
 from SCLDecoder import CASCL_Decoder
 from ErrorChecker import ErrorChecker
 
-k = 256
-n = 512
-L = 1
+k = 128
+n = 256
+L = 4
 r = 4 
 snr = 2
 kaisu = 14*2
@@ -55,4 +55,6 @@ if __name__ == "__main__":
     # フレームエラーの判定とビットエラー数の判定
     error = ErrorChecker.IsDecodeError(message, estimated_message)
     # print(message^estimated_message)
-    print("誤り", error)
+    print(error)
+    er = error[0]
+
