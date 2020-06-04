@@ -43,11 +43,11 @@ class SCL_Decoder:
         """
         informationindex = self._GetInformationIndex()
         self.decoded_list = [np.array([], dtype=np.uint8)]
-        tmp_calculatedLikehood = copy.deepcopy(self.calculatedLikehood)
 
         for i in range(self.n):
             if i in informationindex:
                 l = 0
+                tmp_calculatedLikehood = copy.deepcopy(self.calculatedLikehood) # 計算済みの尤度を一旦保持
                 tmp_decoded_list = []  # 尤度と推定値を保持
                 for lth_path in self.decoded_list:
                     path_appended0 = np.append(lth_path, 0)
@@ -57,13 +57,11 @@ class SCL_Decoder:
                     likehood_appended1 = self._CalculateLikelihood(
                         l, lth_path, i, tmp_calculatedLikehood[l], 1)
 
-                    # print(likehood_0appended)
-                    # print(likehood_1appended)
-
                     tmp_decoded_list.append(
                         [path_appended0, likehood_appended0, tmp_calculatedLikehood[l]])
                     tmp_decoded_list.append(
                         [path_appended1, likehood_appended1, tmp_calculatedLikehood[l]])
+                    # ソートのため[パス、尤度、計算済み尤度]を要素とするリストを作る
                     l += 1
                 tmp_decoded_list = sorted(
                     tmp_decoded_list, key=lambda x: x[1], reverse=True)
@@ -72,11 +70,6 @@ class SCL_Decoder:
                     tmp_decoded_list = tmp_decoded_list[:self.L]
                 self.decoded_list = [x[0] for x in tmp_decoded_list]
                 self.calculatedLikehood = np.array([x[2] for x in tmp_decoded_list])
-
-                # print([x[1] for x in tmp_decoded_list])
-                # print("-------------------------------")
-                # import time
-                # time.sleep(0.1)
 
             else:
                 l = 0
@@ -219,18 +212,16 @@ class CASCL_Decoder(SCL_Decoder):
         戻り値: 正しいと推定されるメッセージ
         """
         informationindex = self._GetInformationIndex()
-        is_nocrc = True
+        # is_nocrc = True
+        likelypath = self.decoded_list[0]
 
         for lth_path in self.decoded_list:
             message = lth_path[informationindex]
             crc_detector = CRC_Detector(message, self.r)
             if crc_detector.IsNoError():
-                is_nocrc = False
                 likelypath = lth_path
                 break
-        if is_nocrc:
-            likelypath = self.decoded_list[0]
-
+        
         estimated_message = likelypath[informationindex]
         estimated_message = estimated_message[:self.k]
         return estimated_message

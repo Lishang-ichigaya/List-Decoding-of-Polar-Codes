@@ -1,7 +1,21 @@
-import numpy as np
+import time
+import sys
+from multiprocessing import Pool
+
+def pa(i):
+    for i in range(1, 101):
+        time.sleep(0.1)
+        # sys.stdout.write("\r")
+        sys.stdout.write("{0}%".format(i))
+        sys.stdout.flush()
+    sys.stdout.write("\n")
 
 if __name__ == "__main__":
-    a = [[2, 3],[1, 5],[14, 21], [87, 2]]
-    b = sorted(a, key=lambda x: x[0], reverse=True)
-    print(a)
-    print(b)
+    p = Pool(8)
+    result = p.imap_unordered(pa, range(4))
+
+    for _ in result:
+        pass
+
+    p.close
+    

@@ -2,6 +2,7 @@
 import numpy as np
 import time
 from multiprocessing import Pool
+from tqdm import tqdm
 
 from CRC import CRC_Encoder
 from Message import MessageMaker
@@ -59,8 +60,8 @@ def Simulation_wrapper(num):
     frameerrorsum = 0
     biterrorsum = 0
     np.random.seed(int(time.time()) + num)
-    
-    for i in range(kaisu//parallel):
+
+    for i in tqdm(range(kaisu//parallel), desc='{0: 03d}'.format(num), leave=False):
         result = Simulation(i)
         frameerrorsum += result[0]
         biterrorsum += result[1]
@@ -69,7 +70,7 @@ def Simulation_wrapper(num):
 
 if __name__ == "__main__":
     p = Pool(parallel)
-    result = p.imap_unordered(Simulation_wrapper, range(parallel))
+    result = p.imap_unordered(Simulation_wrapper, range(parallel)) 
 
     frameerror = 0
     biterror = 0
