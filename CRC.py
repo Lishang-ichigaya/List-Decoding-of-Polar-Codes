@@ -3,7 +3,9 @@ import numpy as np
 
 class CRC:
     def __init__(self, message, CRClen):
-        if CRClen == 3:
+        if CRClen == 1:
+            self.GeneratorPolynomial = np.array([1, 1], dtype=np.uint8)
+        elif CRClen == 3:
             self.GeneratorPolynomial = np.array([1, 0, 1, 1], dtype=np.uint8)
         elif CRClen == 4:
             self.GeneratorPolynomial = np.array([1, 0, 0, 1, 1], dtype=np.uint8)
@@ -16,7 +18,7 @@ class CRC:
         elif CRClen == 16:
             self.GeneratorPolynomial = np.array([1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1], dtype=np.uint8)
         else:
-            self.GeneratorPolynomial = np.array([1, 1], dtype=np.uint8)
+            raise ValueError("適切なCRC長の使用")
         self.Message = message
         self.CRC = np.array([], dtype=np.uint8)
         self.K = np.size(self.Message)

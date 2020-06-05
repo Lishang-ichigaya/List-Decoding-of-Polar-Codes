@@ -10,7 +10,6 @@ def BinaryEntropy(p):
     return -p*np.log2(p)-(1-p)*np.log2(1-p)
 
 if __name__ == "__main__":
-    # time.sleep(1)
-    # messagebox.showinfo("end","おわり")
-    # print(sys.path)
-    notification.NoticeEnd()
+    IW_n = np.loadtxt("aaa.text")
+    for i in range(len(IW_n)):
+        print(i, IW_n[i])

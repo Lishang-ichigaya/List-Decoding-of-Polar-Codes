@@ -203,6 +203,15 @@ class SCL_Decoder:
 
 class CASCL_Decoder(SCL_Decoder):
     def __init__(self, k, n, L, r, snr, path):
+        """
+        受信系列を復号するクラス\n
+        k: メッセージ長\n
+        n: 符号長\n
+        L: リストサイズ\n
+        r: CRC長\n
+        snr: ビットあたりのSN比（E_b/N_0)\n
+        path: インデックスを相互情報量が小さい順に並べたファイルのパス
+        """
         super().__init__(k, n, L, snr, path)
         self.r = r
 
@@ -225,6 +234,23 @@ class CASCL_Decoder(SCL_Decoder):
         estimated_message = likelypath[informationindex]
         estimated_message = estimated_message[:self.k]
         return estimated_message
+
+class multiCRC_SCL_Decoder(SCL_Decoder):
+    def __init__(self, k, n, L, r, threshold, snr, path):
+        """
+        受信系列を復号するクラス\n
+        k: メッセージ長\n
+        n: 符号長\n
+        L: リストサイズ\n
+        r: 総CRC長\n
+        threshold: 各サブブロックの終端インデックスのリスト\n
+        snr: ビットあたりのSN比（E_b/N_0)\n
+        path: インデックスを相互情報量が小さい順に並べたファイルのパス
+        """
+        super().__init__(k, n, L, snr, path)
+        self.r = r
+        self.threshold = threshold
+
 
 
 class SCL_Decoder_BSC:
