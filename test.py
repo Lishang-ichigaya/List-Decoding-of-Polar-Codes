@@ -11,11 +11,6 @@ def pa(i):
     sys.stdout.write("\n")
 
 if __name__ == "__main__":
-    p = Pool(8)
-    result = p.imap_unordered(pa, range(4))
-
-    for _ in result:
-        pass
-
-    p.close
-    
+    a = [1, 2, 3, 5, 7, 11, 13, 17]
+    b = [x-1 for x in a]
+    print(b)

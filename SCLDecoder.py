@@ -21,6 +21,7 @@ class SCL_Decoder:
         self.N_0 = 10**(-snr/10)/(2*(k/n))
         self.path = path
 
+        self.informationindex = None
         self.channeloutput = None
         self.decoded_list = None
         self.calculatedLikehood = np.full(
@@ -34,49 +35,54 @@ class SCL_Decoder:
         self.channeloutput = channeloutput
 
         self._DecodeMiddleMessage()
-        decoded_message = self._GetMessage()
+        decoded_message = self._SelectTrueMessage()
         return decoded_message
 
     def _DecodeMiddleMessage(self):
         """
         情報ビットと凍結ビットが含まれた中間メッセージをL個復号するメソッド\n
         """
-        informationindex = self._GetInformationIndex()
+        self.informationindex = self._GetInformationIndex()
         self.decoded_list = [np.array([], dtype=np.uint8)]
 
         for i in range(self.n):
-            if i in informationindex:
-                l = 0
-                tmp_calculatedLikehood = copy.deepcopy(self.calculatedLikehood) # 計算済みの尤度を一旦保持
-                tmp_decoded_list = []  # 尤度と推定値を保持
-                for lth_path in self.decoded_list:
-                    path_appended0 = np.append(lth_path, 0)
-                    path_appended1 = np.append(lth_path, 1)
-                    likehood_appended0 = self._CalculateLikelihood(
-                        l, lth_path, i, tmp_calculatedLikehood[l], 0)
-                    likehood_appended1 = self._CalculateLikelihood(
-                        l, lth_path, i, tmp_calculatedLikehood[l], 1)
+            self._OneDecodingProcess(i)
 
-                    tmp_decoded_list.append(
-                        [path_appended0, likehood_appended0, tmp_calculatedLikehood[l]])
-                    tmp_decoded_list.append(
-                        [path_appended1, likehood_appended1, tmp_calculatedLikehood[l]])
-                    # ソートのため[パス、尤度、計算済み尤度]を要素とするリストを作る
-                    l += 1
-                tmp_decoded_list = sorted(
-                    tmp_decoded_list, key=lambda x: x[1], reverse=True)
+    def _OneDecodingProcess(self, i):
+        if i in self.informationindex:
+            l = 0
+            # tmp_calculatedLikehood = copy.deepcopy(self.calculatedLikehood)
+            tmp_calculatedLikehood = self.calculatedLikehood  # 計算済みの尤度を一旦保持
+            tmp_decoded_list = []  # 尤度と推定値を保持
+            for lth_path in self.decoded_list:
+                path_appended0 = np.append(lth_path, 0)
+                path_appended1 = np.append(lth_path, 1)
+                likehood_appended0 = self._CalculateLikelihood(
+                    l, lth_path, i, tmp_calculatedLikehood[l], 0)
+                likehood_appended1 = self._CalculateLikelihood(
+                    l, lth_path, i, tmp_calculatedLikehood[l], 1)
 
-                if len(tmp_decoded_list) > self.L:
-                    tmp_decoded_list = tmp_decoded_list[:self.L]
-                self.decoded_list = [x[0] for x in tmp_decoded_list]
-                self.calculatedLikehood = np.array([x[2] for x in tmp_decoded_list])
+                tmp_decoded_list.append(
+                    [path_appended0, likehood_appended0, tmp_calculatedLikehood[l]])
+                tmp_decoded_list.append(
+                    [path_appended1, likehood_appended1, tmp_calculatedLikehood[l]])
+                # ソートのため[パス、尤度、計算済み尤度]を要素とするリストを作る
+                l += 1
+            tmp_decoded_list = sorted(
+                tmp_decoded_list, key=lambda x: x[1], reverse=True)
 
-            else:
-                l = 0
-                for lth_path in self.decoded_list:
-                    lth_path = np.append(lth_path, 0)
-                    self.decoded_list[l] = lth_path
-                    l += 1
+            if len(tmp_decoded_list) > self.L:
+                tmp_decoded_list = tmp_decoded_list[:self.L]
+            self.decoded_list = [x[0] for x in tmp_decoded_list]
+            self.calculatedLikehood = np.array(
+                [x[2] for x in tmp_decoded_list])
+
+        else:
+            l = 0
+            for lth_path in self.decoded_list:
+                lth_path = np.append(lth_path, 0)
+                self.decoded_list[l] = lth_path
+                l += 1
 
     def _SelectTrueMessage(self):
         """
@@ -86,13 +92,6 @@ class SCL_Decoder:
         estimated_middlemessage = self.decoded_list[0]
         informationindex = self._GetInformationIndex()
         estimated_message = estimated_middlemessage[informationindex]
-        return estimated_message
-
-    def _GetMessage(self):
-        """
-        情報ビットと凍結ビットが含まれた中間メッセージからメッセージを抜き出すメソッド
-        """
-        estimated_message = self._SelectTrueMessage()
         return estimated_message
 
     def _CalculateLikelihood(self, l, lth_path, i, calculatedLikehood, u_i):
@@ -115,7 +114,7 @@ class SCL_Decoder:
             calculatedLikehood: 計算済みの尤度を保持する N*logN*2 の行列
             branch: Tal,Vardyの論文中に出てくるブランチ
             """
-            
+
             m = int(np.log2(n))
             if calculatedLikehood[i + n * branch][m][u_i] != -1.0:
                 # 計算済みのW
@@ -230,12 +229,13 @@ class CASCL_Decoder(SCL_Decoder):
             if crc_detector.IsNoError():
                 likelypath = lth_path
                 break
-        
+
         estimated_message = likelypath[informationindex]
         estimated_message = estimated_message[:self.k]
         return estimated_message
 
-class multiCRC_SCL_Decoder(SCL_Decoder):
+
+class multiCRC_SCL_Decoder(CASCL_Decoder):
     def __init__(self, k, n, L, r, threshold, snr, path):
         """
         受信系列を復号するクラス\n
@@ -243,14 +243,68 @@ class multiCRC_SCL_Decoder(SCL_Decoder):
         n: 符号長\n
         L: リストサイズ\n
         r: 総CRC長\n
-        threshold: 各サブブロックの終端インデックスのリスト\n
+        threshold: 各”メッセージ”サブブロックの終端インデックスのリスト\n
         snr: ビットあたりのSN比（E_b/N_0)\n
         path: インデックスを相互情報量が小さい順に並べたファイルのパス
         """
-        super().__init__(k, n, L, snr, path)
-        self.r = r
+        super().__init__(k, n, L, r, snr, path)
         self.threshold = threshold
 
+    def _DecodeMiddleMessage(self):
+        """
+        情報ビットと凍結ビットが含まれた中間メッセージをL個復号するメソッド\n
+        """
+        self.informationindex = self._GetInformationIndex()
+        self.decoded_list = [np.array([], dtype=np.uint8)]
+
+        for i in range(self.n):
+            self._OneDecodingProcess(i)
+
+            if i in self.informationindex[[x-1 for x in self.threshold]]:
+                j = self.threshold[self.informationindex[[
+                    x-1 for x in self.threshold]].tolist().index(i)]
+                # print(j,self.k + self.r,"--")
+                if j == (self.k + self.r)//2:
+                    self._CheckSubblockCRC(0, j)
+                elif j == self.k + self.r:
+                    self._CheckSubblockCRC((self.k + self.r)//2, j)
+
+    def _CheckSubblockCRC(self, startindex, endindex):
+        """
+        サブブロックでCRCをによるチェックを行い、CRCが通るものだけを新たなリストへと格納するメソッド\n
+        starindex: メッセージサブブロックの開始インデックス\n
+        endindex: メッセージサブブロックの終了インデックス\n
+        """
+        List_and_Likehood = [
+            [self.decoded_list[x], self.calculatedLikehood[x]] for x in range(self.L)
+        ]
+        CRClen = self.r // len(self.threshold)
+        # [パス, 計算済み尤度]というリストを要素に持つリストを作り、パス側でチェックを行う。
+
+        collect_path = []
+        for lal in List_and_Likehood:
+            subblock = lal[0][self.informationindex[startindex:endindex]]
+            crc_detector = CRC_Detector(subblock, CRClen)
+            if crc_detector.IsNoError():
+                collect_path.append(lal)
+
+        if collect_path == []:
+            pass
+        else:
+            self.decoded_list = [lal[0] for lal in List_and_Likehood]
+            self.calculatedLikehood = [lal[1] for lal in List_and_Likehood]
+
+    def _SelectTrueMessage(self):
+        """
+        中間メッセージの復号完了後に、L個のリスト中から最も正しいと推定されるメッセージを求めるメソッド\n
+        戻り値: 正しいと推定されるメッセージ
+        """
+        estimated_message = self.decoded_list[0][self.informationindex]
+        estimated_message = np.delete(estimated_message, np.s_[
+                                      self.threshold[0]-self.r//2:self.threshold[0]], 0)
+        estimated_message = np.delete(estimated_message, np.s_[self.k:], 0)
+
+        return estimated_message
 
 
 class SCL_Decoder_BSC:
@@ -324,7 +378,8 @@ class SCL_Decoder_BSC:
                 if len(tmp_decoded_list) > self.L:
                     tmp_decoded_list = tmp_decoded_list[:self.L]
                 self.decoded_list = [x[0] for x in tmp_decoded_list]
-                self.calculatedLikehood = np.array([x[2] for x in tmp_decoded_list])
+                self.calculatedLikehood = np.array(
+                    [x[2] for x in tmp_decoded_list])
 
                 # print(tmp_decoded_list[0][2])
                 # print(self.calculatedLikehood)

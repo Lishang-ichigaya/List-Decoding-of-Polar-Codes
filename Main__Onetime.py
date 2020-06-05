@@ -7,7 +7,7 @@ from CRC import CRC_Encoder
 from Message import MessageMaker
 from Encoder import Encoder
 from Channel import AWGNchannel
-from SCLDecoder import CASCL_Decoder
+from SCLDecoder import multiCRC_SCL_Decoder
 from ErrorChecker import ErrorChecker
 
 k = 128
@@ -19,6 +19,9 @@ kaisu = 14*2
 parallel = 14 
 
 division_num = 2
+threshold = [1, 153, 255]
+threshold = [(k+r)//2, k+r]
+print("しきい:", threshold)
 
 R = k/n
 m = int(np.log2(n))
@@ -54,7 +57,7 @@ if __name__ == "__main__":
     # print("通信路出力", output)
 
     # CRC aided SCL復号
-    decoder = CASCL_Decoder(k, n, L, r, snr, filepath)
+    decoder = multiCRC_SCL_Decoder(k, n, L, r, threshold, snr, filepath)
     estimated_message = decoder.Decode(output)
     # print("メッセージ推定値", estimated_message)
 

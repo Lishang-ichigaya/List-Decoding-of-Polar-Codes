@@ -26,3 +26,4 @@ if __name__ == "__main__":
     # print(unreliable_bitindex) #信頼性が低いビットのインデックス
     threshold = unreliable_bitindex[ [x*len(unreliable_bitindex)//division_num - 1 for x in range(1,division_num+1)]]
     print("スレッショルド: ",threshold)
+    print("従来:         ", information_index[[i*k//division_num -1  for i in range(1, division_num+1)]])
