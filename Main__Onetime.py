@@ -13,10 +13,12 @@ from ErrorChecker import ErrorChecker
 k = 128
 n = 256
 L = 4
-r = 4 
+r = 6 
 snr = 2
 kaisu = 14*2
 parallel = 14 
+
+division_num = 2
 
 R = k/n
 m = int(np.log2(n))
@@ -27,19 +29,23 @@ filepath = "./sort_I/AWGN/sort_I_AWGN_"+str(m)+"_"+str(R)+"_"+"1"+"_.dat"
 
 
 if __name__ == "__main__":
+    ErrorChecker.ParameterCheck_multiCRC(kaisu, parallel, r, division_num)
+
     # メッセージの作成
     messagemaker = MessageMaker(k)
     message = messagemaker.Make()
     # print("メッセージ", message)
+    divided_message = np.split(message, division_num)
 
     #CRC符号化
-    crc_encoder = CRC_Encoder(message, r)
-    crc_codeword = crc_encoder.Encode()
-    # print("CRC符号語", crc_codeword)
+    crc_encoder = [CRC_Encoder(divided_message[i], r//division_num) for i in range(division_num)]
+    crc_codeword = [crc_encoder[i].Encode() for i in range(division_num)]
+    concatenated_crc_codeword = np.concatenate(crc_codeword)
+    # print("CRC符号語", concatenated_crc_codeword)
 
     # ポーラ符号符号化
     encoder = Encoder(k + r, n, filepath)
-    codeword = encoder.Encode(crc_codeword)
+    codeword = encoder.Encode(concatenated_crc_codeword)
     # print("ポーラ符号語",codeword)
 
     # 通信路
