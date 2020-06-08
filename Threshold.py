@@ -21,9 +21,10 @@ if __name__ == "__main__":
     information_index = GetInformationIndex(k, n)
     # print(IW_n[information_index]) # 情報ビットの相互情報量
     unreliable_bit = np.where(IW_n[information_index] < IW_threshold)
+    # print(unreliable_bit[0])
     # print(IW_n[information_index[unreliable_bit[0]]]) # 信頼性が低いビットの相互情報量
     unreliable_bitindex = information_index[unreliable_bit[0]]
-    # print(unreliable_bitindex) #信頼性が低いビットのインデックス
-    threshold = unreliable_bitindex[ [x*len(unreliable_bitindex)//division_num - 1 for x in range(1,division_num+1)]]
-    print("スレッショルド: ",threshold)
-    print("従来:         ", information_index[[i*k//division_num -1  for i in range(1, division_num+1)]])
+    print("信頼性の低いビット\n", unreliable_bitindex) #信頼性が低いビットのインデックス
+    threshold = unreliable_bitindex[ [x*len(unreliable_bitindex)//division_num - 1 for x in range(1,division_num)]]
+    print("スレッショルド:\t",threshold)
+    print("従来:\t\t", information_index[[i*k//division_num -1  for i in range(1, division_num)]])

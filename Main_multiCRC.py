@@ -8,7 +8,7 @@ from CRC import CRC_Encoder
 from Message import MessageMaker
 from Encoder import Encoder
 from Channel import AWGNchannel
-from SCLDecoder import CASCL_Decoder
+from SCLDecoder import multiCRC_SCL_Decoder
 from ErrorChecker import ErrorChecker
 import parameter
 
@@ -20,6 +20,9 @@ snr = parameter.snr
 kaisu = parameter.kaisu
 parallel = parameter.parallel
 
+division_num = parameter.division_num
+threshold = parameter.threshold
+
 R = k/n
 m = int(np.log2(n))
 # K = k + r
@@ -28,26 +31,30 @@ chaneltype = "AWGN"
 filepath = "./sort_I/AWGN/sort_I_AWGN_"+str(m)+"_"+str(R)+"_"+"1"+"_.dat"
 
 def Simulation(i):
+    ErrorChecker.ParameterCheck_multiCRC(kaisu, parallel, r, division_num)
+
     # メッセージの作成
     messagemaker = MessageMaker(k)
     message = messagemaker.Make()
-   
+    divided_message = np.split(message, division_num)
+
     #CRC符号化
-    crc_encoder = CRC_Encoder(message, r)
-    crc_codeword = crc_encoder.Encode()
-    
+    crc_encoder = [CRC_Encoder(divided_message[i], r//division_num) for i in range(division_num)]
+    crc_codeword = [crc_encoder[i].Encode() for i in range(division_num)]
+    concatenated_crc_codeword = np.concatenate(crc_codeword)
+
     # ポーラ符号符号化
     encoder = Encoder(k + r, n, filepath)
-    codeword = encoder.Encode(crc_codeword)
-    
+    codeword = encoder.Encode(concatenated_crc_codeword)
+
     # 通信路
     channel = AWGNchannel(snr, k, n)
     output = channel.Transmit(codeword)
-    
+
     # CRC aided SCL復号
-    decoder = CASCL_Decoder(k, n, L, r, snr, filepath)
+    decoder = multiCRC_SCL_Decoder(k, n, L, r, threshold, snr, filepath)
     estimated_message = decoder.Decode(output)
-    
+
     # フレームエラーの判定とビットエラー数の判定
     error = ErrorChecker.IsDecodeError(message, estimated_message)
 
@@ -86,5 +93,3 @@ if __name__ == "__main__":
     print("FER: " + str(frameerror/kaisu))
     print("BER: " + str(biterror/(k*kaisu)))
     print("実行時間: " + str(end-start))
-
-    

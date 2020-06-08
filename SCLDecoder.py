@@ -264,10 +264,11 @@ class multiCRC_SCL_Decoder(CASCL_Decoder):
                 j = self.threshold[self.informationindex[[
                     x-1 for x in self.threshold]].tolist().index(i)]
                 # print(j,self.k + self.r,"--")
-                if j == (self.k + self.r)//2:
-                    self._CheckSubblockCRC(0, j)
-                elif j == self.k + self.r:
-                    self._CheckSubblockCRC((self.k + self.r)//2, j)
+                # if j == (self.k + self.r)//2:
+                if j == self.threshold[0]:
+                    self._CheckSubblockCRC(0, self.threshold[0])
+                elif j == self.threshold[1]:
+                    self._CheckSubblockCRC(self.threshold[0], self.threshold[1])
 
     def _CheckSubblockCRC(self, startindex, endindex):
         """
@@ -291,8 +292,9 @@ class multiCRC_SCL_Decoder(CASCL_Decoder):
         if collect_path == []:
             pass
         else:
-            self.decoded_list = [lal[0] for lal in List_and_Likehood]
-            self.calculatedLikehood = [lal[1] for lal in List_and_Likehood]
+            self.decoded_list = [cp[0] for cp in collect_path]
+            self.calculatedLikehood = [cp[1] for cp in collect_path]
+
 
     def _SelectTrueMessage(self):
         """

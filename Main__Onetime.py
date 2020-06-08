@@ -21,7 +21,7 @@ parallel = 14
 division_num = 2
 threshold = [1, 153, 255]
 threshold = [(k+r)//2, k+r]
-print("しきい:", threshold)
+# print("しきい:", threshold)
 
 R = k/n
 m = int(np.log2(n))
