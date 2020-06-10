@@ -22,6 +22,7 @@ parallel = parameter.parallel
 
 division_num = parameter.division_num
 threshold = parameter.threshold
+#区切り位置は「メッセージ」の区切り位置である
 
 R = k/n
 m = int(np.log2(n))

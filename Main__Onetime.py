@@ -10,17 +10,16 @@ from Channel import AWGNchannel
 from SCLDecoder import multiCRC_SCL_Decoder
 from ErrorChecker import ErrorChecker
 
-k = 128
-n = 256
+k = 512
+n = 1024
 L = 4
-r = 6 
-snr = 2
-kaisu = 14*2
-parallel = 14 
+r = 16 
+snr = 3
+kaisu = 16*2
+parallel = 16 
 
-division_num = 2
-threshold = [1, 153, 255]
-threshold = [(k+r)//2, k+r]
+division_num = 4
+threshold = [[131, 263, 395], [502, 743, 890]]
 # print("しきい:", threshold)
 
 R = k/n
@@ -39,9 +38,11 @@ if __name__ == "__main__":
     message = messagemaker.Make()
     # print("メッセージ", message)
     divided_message = np.split(message, division_num)
+    
+
 
     #CRC符号化
-    crc_encoder = [CRC_Encoder(divided_message[i], r//division_num) for i in range(division_num)]
+    crc_encoder = [CRC_Encoder(np.array(divided_message[i]), r//division_num) for i in range(division_num)]
     crc_codeword = [crc_encoder[i].Encode() for i in range(division_num)]
     concatenated_crc_codeword = np.concatenate(crc_codeword)
     # print("CRC符号語", concatenated_crc_codeword)
