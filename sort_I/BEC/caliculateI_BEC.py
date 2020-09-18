@@ -13,8 +13,8 @@ def CaliculateI_BEC(e, N, i):
 
 
 if __name__ == "__main__":
-    e = 0.8
-    N = 256
+    e = 0.5
+    N = 2**14
     sum = 0
     I_i = {}
     for i in range(N):
@@ -22,8 +22,8 @@ if __name__ == "__main__":
         I_i[i] = I
         sum += I
         print(I)
-    print(sum, (1-e)*N)
-    print(I_i)
+    # print(sum, (1-e)*N)
+    # print(I_i)
 
     I_i = sorted(I_i.items(), key=lambda I_i:I_i[1])
     
@@ -31,8 +31,9 @@ if __name__ == "__main__":
     for i in range(N):
         A.append(I_i[i][0])
     
-    print(A)
+    # print(A)
     path = "./sortI_BEC_"+str(e)+"_"+str(N)+".dat"
-    with open(path, mode='w') as f :
-        for num in A:
-            f.write(str(num)+' ')
+    if False:
+        with open(path, mode='w') as f :
+            for num in A:
+                f.write(str(num)+' ')

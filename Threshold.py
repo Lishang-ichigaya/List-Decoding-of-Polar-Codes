@@ -14,11 +14,11 @@ def GetInformationIndex(k, n):
 
 
 if __name__ == "__main__":
-    k = 512 + 16
-    n = 1024
+    k = 128 + 8
+    n = 256
     snr = 1
     IW_n = np.loadtxt("./IW/IW_{}_{}.txt".format(n, snr))
-    division_num = 4
+    division_num = 2
     IW_threshold = 0.99
     information_index = GetInformationIndex(k, n)
 
@@ -42,3 +42,7 @@ if __name__ == "__main__":
           i*k//division_num - 1 for i in range(1, division_num)])
     print("従来ビットチャネルのスレッショルド:\t", information_index[[
           i*k//division_num - 1 for i in range(1, division_num)]])
+
+    k = 20
+    print(k, information_index[k])
+

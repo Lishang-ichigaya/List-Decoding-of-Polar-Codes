@@ -35,6 +35,7 @@ class SCL_Decoder:
         self.channeloutput = channeloutput
 
         self._DecodeMiddleMessage()
+        # print("中間メッセージ:", self.decoded_list[0])
         decoded_message = self._SelectTrueMessage()
         return decoded_message
 
@@ -77,6 +78,7 @@ class SCL_Decoder:
             self.calculatedLikehood = np.array(
                 [x[2] for x in tmp_decoded_list])
 
+            
         else:
             l = 0
             for lth_path in self.decoded_list:
@@ -128,8 +130,8 @@ class SCL_Decoder:
                 else:
                     W = norm.pdf(x=chaneloutput, loc=-1,
                                  scale=np.sqrt(self.N_0))
-                calculatedLikehood[i + n * branch][m][u_i] = W[0]*6
-                return W[0]*6
+                calculatedLikehood[i + n * branch][m][u_i] = W[0]*8
+                return W[0]*8
 
             # 以下再起的呼び出し
             y_1 = chaneloutput[:n//2]
@@ -262,15 +264,15 @@ class multiCRC_SCL_Decoder(CASCL_Decoder):
 
             if i in self.threshold[1]:
                 j = self.threshold[0][self.threshold[1].index(i)]
-                # print(j)
-                # print(self.threshold[0][0])
                 if j == self.threshold[0][0]:
                     self._CheckSubblockCRC(0, self.threshold[0][0]+1)
-                elif j == self.threshold[0][1]:
-                    self._CheckSubblockCRC(self.threshold[0][0]+1, self.threshold[0][1]+1)
-                elif j == self.threshold[0][2]:
-                    self._CheckSubblockCRC(self.threshold[0][1]+1, self.threshold[0][2]+1)
-                #最後のサブブロックは_SelectTrueMessage内で行う
+                # division_num=2のときはここまで
+
+                # elif j == self.threshold[0][1]:
+                #     self._CheckSubblockCRC(self.threshold[0][0]+1, self.threshold[0][1]+1)
+                # elif j == self.threshold[0][2]:
+                #     self._CheckSubblockCRC(self.threshold[0][1]+1, self.threshold[0][2]+1)
+                # 最後のサブブロックは_SelectTrueMessage内で行う
 
     def _CheckSubblockCRC(self, startindex, endindex):
         """
@@ -297,23 +299,98 @@ class multiCRC_SCL_Decoder(CASCL_Decoder):
         else:
             self.decoded_list = [cp[0] for cp in collect_path]
             self.calculatedLikehood = [cp[1] for cp in collect_path]
-        # print(len(self.decoded_list))
 
     def _SelectTrueMessage(self):
         """
         中間メッセージの復号完了後に、L個のリスト中から最も正しいと推定されるメッセージを求めるメソッド\n
         戻り値: 正しいと推定されるメッセージ
         """
-        self._CheckSubblockCRC(self.threshold[0][2]+1, self.k+self.r) #最後のサブブロックのチェック
+        self._CheckSubblockCRC(
+            self.threshold[0][0]+1, self.k+self.r)  # 最後のサブブロックのチェック
+        # self._CheckSubblockCRC(self.threshold[0][2]+1, self.k+self.r)
 
-        estimated_crc_message = self.decoded_list[0][self.informationindex] #CRC符号語の推定値を得る
+        # CRC符号語の推定値を得る
+        estimated_crc_message = self.decoded_list[0][self.informationindex]
         # estimated_message = np.delete(estimated_message, np.s_[
         #                               self.threshold[0]-self.r//2:self.threshold[0]], 0)
         # estimated_message = np.delete(estimated_message, np.s_[self.k:], 0)
 
         division_num = len(self.threshold[0])+1
-        subblock = np.split(estimated_crc_message, division_num)
-        subblock = [subblock[i][:self.k//division_num] for i in range(division_num)]
+        # subblock = np.split(estimated_crc_message, division_num)
+        # subblock = [subblock[i][:self.k//division_num] for i in range(division_num)]
+        # subblock = [ estimated_crc_message[:self.threshold[0][0]+1], estimated_crc_message[self.threshold[0][0]+1:]]
+        subblock = np.split(estimated_crc_message, [self.threshold[0][0]+1])
+        # subblock = np.split(estimated_crc_message, [self.threshold[0][0]+1, self.threshold[0][1]+1, self.threshold[0][2]+1])
+        # print(len(subblock[0]), len(subblock[1]))
+        subblock = [subblock[i][:-self.r//division_num]
+                    for i in range(division_num)]
+        # print(len(subblock[0]), len(subblock[1]))
+
+        estimated_message = np.concatenate(subblock)
+
+        return estimated_message
+
+
+class multiCRC_SCL_Decoder_2(multiCRC_SCL_Decoder):
+    def _DecodeMiddleMessage(self):
+        """
+        情報ビットと凍結ビットが含まれた中間メッセージをL個復号するメソッド\n
+        """
+        self.informationindex = self._GetInformationIndex()
+        self.decoded_list = [np.array([], dtype=np.uint8)]
+
+        for i in range(self.n):
+            self._OneDecodingProcess(i)
+
+            if i in self.threshold[1]:
+                j = self.threshold[0][self.threshold[1].index(i)]
+                if j == self.threshold[0][0]:
+                    self._CheckSubblockCRC(0, self.threshold[0][0]+1, 3)
+
+    def _CheckSubblockCRC(self, startindex, endindex, CRClen):
+        """
+        サブブロックでCRCをによるチェックを行い、CRCが通るものだけを新たなリストへと格納するメソッド\n
+        starindex: メッセージサブブロックの開始インデックス\n
+        endindex: メッセージサブブロックの終了インデックス\n
+        CRClen: CRCの長さ\n
+        """
+        # print(endindex-startindex)
+        List_and_Likehood = [
+            [self.decoded_list[x], self.calculatedLikehood[x]] for x in range(self.L)
+        ]
+
+        # [パス, 計算済み尤度]というリストを要素に持つリストを作り、パス側でチェックを行う。
+        
+        collect_path = []
+        for lal in List_and_Likehood:
+            # print(self.informationindex[startindex:endindex])
+            subblock = lal[0][self.informationindex[startindex:endindex]]
+            crc_detector = CRC_Detector(subblock, CRClen)
+            if crc_detector.IsNoError():
+                collect_path.append(lal)
+
+        if collect_path == []:
+            pass
+        else:
+            self.decoded_list = [cp[0] for cp in collect_path]
+            self.calculatedLikehood = [cp[1] for cp in collect_path]
+        print("aaaa")
+
+    def _SelectTrueMessage(self):
+        self._CheckSubblockCRC(
+            self.threshold[0][0]+1, self.k+self.r, 2)  # 最後のサブブロックのチェック
+
+        # CRC符号語の推定値を得る
+        estimated_crc_message = self.decoded_list[0][self.informationindex]
+
+        division_num = len(self.threshold[0])+1
+
+        subblock = np.split(estimated_crc_message, [self.threshold[0][0]+1])
+        subblock_h = subblock[0][:-3]
+        subblock_t = subblock[0][:-2]
+
+        subblock = [subblock_h, subblock_t]
+
         estimated_message = np.concatenate(subblock)
 
         return estimated_message

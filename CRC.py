@@ -5,10 +5,14 @@ class CRC:
     def __init__(self, message, CRClen):
         if CRClen == 1:
             self.GeneratorPolynomial = np.array([1, 1], dtype=np.uint8)
+        elif CRClen == 2:
+            self.GeneratorPolynomial = np.array([1, 0 ,1], dtype=np.uint8)
         elif CRClen == 3:
             self.GeneratorPolynomial = np.array([1, 0, 1, 1], dtype=np.uint8)
         elif CRClen == 4:
             self.GeneratorPolynomial = np.array([1, 0, 0, 1, 1], dtype=np.uint8)
+        elif CRClen == 5:
+            self.GeneratorPolynomial = np.array([1, 1, 0, 1, 0, 1], dtype=np.uint8)
         elif CRClen == 6:
             self.GeneratorPolynomial = np.array([1, 0, 0, 0, 0, 1, 1], dtype=np.uint8)
         elif CRClen == 8:

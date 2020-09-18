@@ -37,7 +37,7 @@ def Simulation(i):
     # メッセージの作成
     messagemaker = MessageMaker(k)
     message = messagemaker.Make()
-    divided_message = np.split(message, division_num)
+    divided_message = [message[:threshold[0][0]+1-r//division_num], message[threshold[0][0]+1-r//division_num:]]
 
     #CRC符号化
     crc_encoder = [CRC_Encoder(divided_message[i], r//division_num) for i in range(division_num)]

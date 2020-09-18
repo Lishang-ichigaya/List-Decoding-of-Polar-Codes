@@ -17,6 +17,7 @@ class ErrorChecker:
         is_flameerror = True if biterror != 0 else False
 
         return is_flameerror, biterror
+    
 
     @classmethod 
     def ParameterCheck_multiCRC(self, kaisu, parallel, r, division_num):
