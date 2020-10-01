@@ -1,11 +1,11 @@
-k = 64
-n = 128
-L = 1
+k = 128
+n = 256
+L = 2
 r = 8
-snr = 2
+snr = 1
 
-kaisu = 8*100
-parallel = 8
+kaisu = 40
+parallel = 4
 
 division_num = 2
 # threshold = [[131, 263, 395], [502, 743, 890]] #従来のmultiCRC 1024

@@ -65,6 +65,7 @@ def Simulation_wrapper(num):
     return [frameerrorsum, biterrorsum]
 
 if __name__ == "__main__":
+    ErrorChecker.CheckParameter(kaisu, parallel)
     p = Pool(parallel)
     result = p.imap_unordered(Simulation_wrapper, range(parallel))
 

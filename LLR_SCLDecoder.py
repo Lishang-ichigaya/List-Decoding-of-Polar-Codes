@@ -119,9 +119,9 @@ class LLR_SCDecoder:
                                 calculatedLLR, 2*branch)
                 LLR_2 = get_LLR(n//2, y_2, j//2, hat_u2,
                                 calculatedLLR, 2*branch+1)
-                # LLR = np.sign(LLR_1) * np.sign(LLR_2) * min(abs(LLR_1), abs(LLR_2)) #近似式
-                LLR = np.log((np.exp(LLR_1 + LLR_2)+1) /
-                             (np.exp(LLR_1)+np.exp(LLR_2)))
+                LLR = np.sign(LLR_1) * np.sign(LLR_2) * min(abs(LLR_1), abs(LLR_2)) #近似式
+                # LLR = np.log((np.exp(LLR_1 + LLR_2)+1) /
+                            #  (np.exp(LLR_1)+np.exp(LLR_2)))
             else:
                 LLR_1 = get_LLR(n//2, y_1, j//2, hat_u1,
                                 calculatedLLR, 2*branch)
@@ -212,8 +212,6 @@ class LLR_SCLDecoder(LLR_SCDecoder):
                 self.decoded_list = [x[0] for x in tmp_list]
                 self.PathMetric = [x[1] for x in tmp_list]
                 self.calculatedLLR = np.array([x[2] for x in tmp_list])
-                # print(self.PathMetric)
-                
         
             else:
                 l = 0
@@ -224,11 +222,8 @@ class LLR_SCLDecoder(LLR_SCDecoder):
                     PM = self._CalculatePathMetric(self.PathMetric[l], LLR, 0)
                     self.decoded_list[l] = lth_path
                     self.PathMetric[l] = PM
-                    # self.calculatedLLR[l] = LLR
-                    # print(LLR)
                     l += 1
-            # print("------------------------------------------------")
-
+            
     def _CalculatePathMetric(self, PM, LLR, u_i):
         """
         Path Metricを計算するメソッド\n
@@ -237,9 +232,8 @@ class LLR_SCLDecoder(LLR_SCDecoder):
         u_i: パスのi番目の値\n
         戻り値: パスのPM\n
         """
-        newPM = PM + np.log(1+np.exp(-(1-2*u_i)*LLR))
-        # newPM = PM if u_i == int(0.5*(1 - np.sign(LLR))) else PM + abs(LLR)
-        # print(-(1-2*u_i)*LLR, np.exp(-(1-2*u_i)*LLR))
+        # newPM = PM + np.log(1+np.exp(-(1-2*u_i)*LLR))
+        newPM = PM if u_i==0.5*(1-np.sign(LLR)) else PM+abs(LLR)
         return newPM
 
     def _PickCorrectMessage(self):

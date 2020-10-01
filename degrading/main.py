@@ -5,14 +5,26 @@ from multiprocessing import Pool
 from tqdm import tqdm
 import copy
 import sys
-sys.path.append('C:\\Users\\kurosu\\Documents\\MyPyLibrary')
+# sys.path.append('C:\\Users\\kurosu\\Documents\\MyPyLibrary')
+sys.path.append('C:\\Users\\pikac\\Documents\\MyPyLibrary')
+# sys.path.append('/Users/kurosumichitaka/MyLibrary')
 import notification
 
-N = 512
+
+
+
+
+N = 4
+parallelnum = 16
+
+
+
+
+
+
 M = int(np.log2(N))
-mu = 16
+mu = 32
 mu_awgn = 128
-parallelnum = 48
 
 snr = 1
 R = 1/2

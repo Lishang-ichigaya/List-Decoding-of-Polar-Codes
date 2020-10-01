@@ -18,6 +18,17 @@ class ErrorChecker:
 
         return is_flameerror, biterror
     
+    @classmethod
+    def CheckParameter(self, kaisu, parallels):
+        """
+        実行回数と並列数が適切か確認するメソッド\n
+        kaisu: 回数\n
+        parallels: 並列数\n
+        """
+        a = kaisu % parallels
+        if a != 0:
+            raise ValueError("実行回数と並列数を適切に")
+
 
     @classmethod 
     def ParameterCheck_multiCRC(self, kaisu, parallel, r, division_num):
